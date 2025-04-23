@@ -1,0 +1,91 @@
+import Papa from "papaparse";
+import { Entry, Place, Product, placeProperties } from "./types";
+
+export async function fetchData(path: string) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) {
+      throw new Error(`Response status: ${res.status}`);
+    }
+    return await res.text();
+  } catch (err) {
+    console.log((err as Error).message);
+  }
+}
+
+export function parseEntries(csvString: string) {
+  const entries = new Map<number, Entry[]>();
+
+  type T = (Entry & { placeId: number })[];
+  const parsed = Papa.parse(csvString, {
+    header: true,
+    transform: (v: string, header: string) => {
+      if (["placeId", "productId", "price", "volume"].indexOf(header) >= 0) return Number(v);
+      return v;
+    },
+  }).data as T;
+
+  parsed.forEach(({ placeId, ...entry }) => {
+    if (entries.has(placeId)) {
+      entries.get(placeId)!.push(entry);
+    } else {
+      entries.set(placeId, [entry]);
+    }
+  });
+  return entries;
+}
+
+function getPriceRating(entries: Entry[] | undefined) {
+  if (entries === undefined) {
+    return undefined;
+  }
+  const tmp = entries.filter((v) => v.volume > 0).map((v) => (0.5 * v.price) / v.volume);
+  if (tmp.length > 0) {
+    return tmp.reduce((acc, v) => (v < acc ? v : acc), 1);
+  }
+  return undefined;
+}
+
+export function parsePlaces(csvString: string, entries: Map<number, Entry[]>) {
+  const parsed = Papa.parse(csvString, {
+    header: true,
+    transform: (v: string, header: string) => {
+      if (["lon", "lat", "placeId"].indexOf(header) >= 0) return Number(v);
+      return v;
+    },
+  }).data as Place[];
+
+  return parsed.map((v: Place) => ({
+    type: "Feature",
+    id: v["placeId"],
+    geometry: {
+      type: "Point",
+      coordinates: [v["lon"], v["lat"]],
+    },
+    properties: placeProperties.reduce((acc, header) => ({ ...acc, [header]: v[header] }), {
+      priceRating: getPriceRating(entries.get(v["placeId"])),
+    }),
+  }));
+}
+
+export function parseProducts(csvString: string) {
+  const products = new Map<number, Product>();
+
+  type T = (Product & { productId: number })[];
+  const parsed = Papa.parse(csvString, {
+    header: true,
+    transform: (v: string, header: string) => {
+      if (header === "productId") return Number(v);
+      return v;
+    },
+  }).data as T;
+
+  parsed.forEach(({ productId, ...product }) => {
+    if (products.has(productId)) {
+      throw new Error(`Duplicate 'productId' ${productId}`);
+    } else {
+      products.set(productId, product);
+    }
+  });
+  return products;
+}
