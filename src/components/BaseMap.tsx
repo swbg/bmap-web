@@ -20,6 +20,12 @@ export default function BaseMap() {
   const [activePlace, setActivePlace] = useState<PlaceJSON | undefined>(undefined);
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
 
+  const unsetActivePlace = (activePlace: PlaceJSON) => {
+    setActivePlace(undefined);
+    if (!map.current) return;
+    map.current.setFeatureState({ source: "places", id: activePlace.id }, { selected: false });
+  };
+
   useEffect(() => {
     const fetchEntries = async () => {
       const csvString = await fetchData("./entries.csv");
@@ -209,7 +215,14 @@ export default function BaseMap() {
       if (!map.current) return;
       if (typeof e.features[0].id !== "number") return;
       const placeIdx = placeMapper.get(e.features[0].id);
-      if (placeIdx !== undefined) setActivePlace(places[placeIdx]);
+      if (placeIdx !== undefined) {
+        setActivePlace(places[placeIdx]);
+        // Keep active place highlighted
+        map.current.setFeatureState(
+          { source: "places", id: places[placeIdx].id },
+          { selected: true },
+        );
+      }
     };
     map.current.on("click", "places-markers", (e) => selectPlace(e));
     map.current.on("click", "places-names", (e) => selectPlace(e));
@@ -236,7 +249,7 @@ export default function BaseMap() {
           activePlace={activePlace}
           activeEntries={entries.get(activePlace.id)}
           products={products}
-          unsetActivePlace={() => setActivePlace(undefined)}
+          unsetActivePlace={() => unsetActivePlace(activePlace)}
         />
       )}
     </div>
