@@ -41,6 +41,7 @@ body {
   background-color: white;
   padding: 0 10px 10px 10px;
   border-radius: 5px;
+  box-shadow: 0 0 3px #555555;
 }
 
 @media (max-aspect-ratio: 1/1) {
