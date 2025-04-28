@@ -1,5 +1,6 @@
+import Cross from "../assets/cross.svg";
 import { Entry, PlaceJSON, Product } from "../types";
-import { formatPrice } from "../utils";
+import { formatPhone, formatPrice } from "../utils";
 
 export default function InfoPanel({
   activePlace,
@@ -12,26 +13,42 @@ export default function InfoPanel({
   products: Map<number, Product>;
   unsetActivePlace: () => void;
 }) {
-  if (activeEntries === undefined) return;
-
+  const p = activePlace.properties;
   return (
     <div className="info-panel">
-      <div className="info-row">
-        <p>{activePlace.properties.placeName}</p>
-        <div className="info-close" onClick={unsetActivePlace}>
-          X
-        </div>
+      <div className="info-close" onClick={unsetActivePlace}>
+        <img src={Cross} />
       </div>
-      <p>{activePlace.properties.address}</p>
-      <p>{activePlace.properties.website}</p>
-      <ul>
-        {activeEntries.map((e, i) => (
-          <li key={i}>
-            {formatPrice(e.price)} {products.get(e.productId)!.brandName}{" "}
-            {products.get(e.productId)!.productName}
-          </li>
-        ))}
-      </ul>
+      <h3>{p.placeName}</h3>
+      {p.address && (
+        <p>
+          <a href={`https://www.google.com/maps/place/${encodeURIComponent(p.address)}/`}>
+            {p.address}
+          </a>
+        </p>
+      )}
+      {p.phone && <p>{formatPhone(p.phone)}</p>}
+      {p.website && (
+        <p>
+          <a href={`"${p.website}"`}>{p.website}</a>
+        </p>
+      )}
+      {activeEntries ? (
+        <table>
+          <tbody>
+            {activeEntries.map((e, i) => (
+              <tr key={i}>
+                <td>
+                  {products.get(e.productId)!.brandName} {products.get(e.productId)!.productName}
+                </td>
+                <td>{formatPrice(e.price)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>Noch keine Preise verfügbar.</p>
+      )}
     </div>
   );
 }
