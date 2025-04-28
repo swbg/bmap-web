@@ -68,6 +68,22 @@ export default function BaseMap() {
       center: center,
       zoom: zoom,
     });
+    map.current.addControl(
+      new maplibregl.NavigationControl({
+        visualizePitch: true,
+        showZoom: true,
+        showCompass: true,
+      }),
+    );
+    map.current.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+      }),
+    );
+
     // Makes sure style has loaded before any data is added
     map.current.on("load", () => {
       for (const [markerName, markerColor] of markerColors.entries()) {
