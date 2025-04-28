@@ -5,8 +5,6 @@ import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { Entry, PlaceJSON, Product } from "../types";
 import InfoPanel from "./InfoPanel";
 
-let previousPlaceIdx: number | undefined; 
-
 export default function BaseMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -20,6 +18,12 @@ export default function BaseMap() {
 
   const [activePlace, setActivePlace] = useState<PlaceJSON | undefined>(undefined);
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
+
+  const unsetActivePlace = (activePlace: PlaceJSON) => {
+    setActivePlace(undefined);
+    if (!map.current) return;
+    map.current.setFeatureState({ source: "places", id: activePlace.id }, { selected: false });
+  };
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -90,7 +94,11 @@ export default function BaseMap() {
         "circle-radius": [
           "case",
           // Large when hovered
-          ["any", ["boolean", ["feature-state", "hover"], false],["boolean", ["feature-state", "selected"], false]],
+          [
+            "any",
+            ["boolean", ["feature-state", "hover"], false],
+            ["boolean", ["feature-state", "selected"], false],
+          ],
           9,
           // Regular when price available
           ["to-boolean", ["get", "priceRating"]],
@@ -108,7 +116,11 @@ export default function BaseMap() {
         "circle-opacity": [
           "case",
           // Opaque if hovered
-          ["any", ["boolean", ["feature-state", "hover"], false], ["boolean", ["feature-state", "selected"], false]],
+          [
+            "any",
+            ["boolean", ["feature-state", "hover"], false],
+            ["boolean", ["feature-state", "selected"], false],
+          ],
           1.0,
           // Opacity if price available
           ["to-boolean", ["get", "priceRating"]],
@@ -177,20 +189,14 @@ export default function BaseMap() {
       if (!map.current) return;
       if (typeof e.features[0].id !== "number") return;
       const placeIdx = placeMapper.get(e.features[0].id);
-      if (placeIdx !== undefined) setActivePlace(places[placeIdx]);
-      
-      // Reset the state of the previously selected marker circle
-      previousPlaceIdx && map.current.setFeatureState(
-          { source: "places", id: previousPlaceIdx },
-          { selected: false }
+      if (placeIdx !== undefined) {
+        setActivePlace(places[placeIdx]);
+        // Keep active place highlighted
+        map.current.setFeatureState(
+          { source: "places", id: places[placeIdx].id },
+          { selected: true },
         );
-      // Highligth currently clicked marker circle
-      map.current.setFeatureState(
-        { source: "places", id: placeIdx },
-        {selected: true }
-      );
-      // Save current id for next state reset
-      previousPlaceIdx = placeIdx;
+      }
     });
 
     return () => {
@@ -207,17 +213,6 @@ export default function BaseMap() {
     };
   }, [map.current, isMapLoaded, entries, places, placeMapper, products]);
 
-  useEffect(() => {
-    // Reset last selected marker circle state if info panel is closed
-    if (!activePlace && previousPlaceIdx && map.current) {
-      map.current.setFeatureState(
-        { source: "places", id: previousPlaceIdx },
-        { selected: false }
-      );
-      previousPlaceIdx = undefined;
-    }
-  }, [activePlace]);
-
   return (
     <div className="map">
       <div className="map-container" ref={mapContainer} />
@@ -226,7 +221,7 @@ export default function BaseMap() {
           activePlace={activePlace}
           activeEntries={entries.get(activePlace.id)}
           products={products}
-          unsetActivePlace={() => setActivePlace(undefined)}
+          unsetActivePlace={() => unsetActivePlace(activePlace)}
         />
       )}
     </div>
