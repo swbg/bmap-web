@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 
@@ -19,7 +23,7 @@ body {
 .map {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
 }
 
 .map-container {
@@ -35,22 +39,63 @@ body {
   left: 5px;
   min-width: 15%;
   background-color: white;
-  padding: 0 5px;
+  padding: 0 10px 10px 10px;
+  border-radius: 5px;
 }
 
-.info-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+@media (max-aspect-ratio: 1/1) {
+  .info-panel {
+    top: auto;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.info-panel h3 {
+  margin-top: 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid black;
+  margin-bottom: 8px;
+}
+
+.info-panel p {
+  margin: 8px 0;
 }
 
 .info-close {
-  height: 2em;
-  width: 2em;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  height: 1.7em;
+  width: 1.7em;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: grey;
+  background-color: #bbbbbb;
   border-radius: 100%;
   cursor: pointer;
+}
+
+.info-close:hover {
+  background-color: #aaaaaa;
+}
+
+.info-close img {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.info-panel table {
+  border-collapse: collapse;
+}
+
+.info-panel td:first-child {
+  padding-left: 0;
+}
+
+.info-panel td {
+  padding-left: 15px;
 }
