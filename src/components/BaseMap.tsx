@@ -13,8 +13,7 @@ export default function BaseMap() {
   const zoom = 14;
 
   const [entries, setEntries] = useState<Map<number, Entry[]> | null>(null);
-  const [places, setPlaces] = useState<PlaceJSON[] | null>(null);
-  const [placeMapper, setPlaceMapper] = useState<Map<number, number> | null>(null);
+  const [places, setPlaces] = useState<Map<number, PlaceJSON> | null>(null);
   const [products, setProducts] = useState<Map<number, Product> | null>(null);
 
   const [activePlace, setActivePlace] = useState<PlaceJSON | undefined>(undefined);
@@ -48,11 +47,7 @@ export default function BaseMap() {
       const csvString = await fetchData("./places.csv");
       if (!csvString) return;
 
-      const places = parsePlaces(csvString, entries);
-      const placeMapper = new Map<number, number>(places.map((v, idx) => [v.id, idx]));
-
-      setPlaces(places as PlaceJSON[]);
-      setPlaceMapper(placeMapper);
+      setPlaces(parsePlaces(csvString, entries));
     };
 
     fetchPlaces();
@@ -106,14 +101,13 @@ export default function BaseMap() {
     if (!isMapLoaded) return;
     if (!entries) return;
     if (!places) return;
-    if (!placeMapper) return;
     if (!products) return;
 
     map.current.addSource("places", {
       type: "geojson",
       data: {
         type: "FeatureCollection",
-        features: places,
+        features: Array.from(places.values()),
       },
     });
     map.current.addLayer({
@@ -165,10 +159,10 @@ export default function BaseMap() {
       id: "places-names",
       source: "places",
       type: "symbol",
-      minzoom: 14,
+      minzoom: 13,
       layout: {
         "text-field": ["get", "placeName"],
-        "text-font": ["Noto Sans Regular"],
+        "text-font": ["Open Sans Regular"],
         "text-offset": [0, 0],
         "text-anchor": "top",
         "text-line-height": 1.05,
@@ -233,15 +227,13 @@ export default function BaseMap() {
       if (!e?.features) return;
       if (e.features.length === 0) return;
       if (!map.current) return;
-      if (typeof e.features[0].id !== "number") return;
-      const placeIdx = placeMapper.get(e.features[0].id);
-      if (placeIdx !== undefined) {
-        setActivePlace(places[placeIdx]);
+
+      const placeId = e.features[0].id;
+      if (typeof placeId !== "number") return;
+      if (placeId !== undefined) {
+        setActivePlace(places.get(placeId));
         // Keep active place highlighted
-        map.current.setFeatureState(
-          { source: "places", id: places[placeIdx].id },
-          { selected: true },
-        );
+        map.current.setFeatureState({ source: "places", id: placeId }, { selected: true });
       }
     };
     map.current.on("click", "places-markers", (e) => selectPlace(e));
@@ -259,7 +251,7 @@ export default function BaseMap() {
         map.current.removeSource("places");
       }
     };
-  }, [map.current, isMapLoaded, entries, places, placeMapper, products]);
+  }, [map.current, isMapLoaded, entries, places, products]);
 
   return (
     <div className="map">
