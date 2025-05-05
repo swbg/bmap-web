@@ -3,7 +3,7 @@
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", sans-serif;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -18,6 +18,11 @@
 
 body {
   margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: #663333;
 }
 
 .map {

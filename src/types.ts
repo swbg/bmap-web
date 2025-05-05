@@ -40,8 +40,7 @@ export type PlaceJSON = {
     website: string;
     phone: string;
     closed: boolean;
-    placeId: number;
-    priceRating: number;
+    priceRating: number | undefined;
   };
 };
 

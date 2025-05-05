@@ -22,7 +22,10 @@ export default function InfoPanel({
       <h3>{p.placeName}</h3>
       {p.address && (
         <p>
-          <a href={`https://www.google.com/maps/place/${encodeURIComponent(p.address)}/`}>
+          <a
+            target="_blank"
+            href={`https://www.google.com/maps/place/${encodeURIComponent(p.address)}/`}
+          >
             {p.address}
           </a>
         </p>
@@ -30,7 +33,9 @@ export default function InfoPanel({
       {p.phone && <p>{formatPhone(p.phone)}</p>}
       {p.website && (
         <p>
-          <a href={`"${p.website}"`}>{p.website}</a>
+          <a target="_blank" href={p.website}>
+            {p.website}
+          </a>
         </p>
       )}
       {activeEntries ? (

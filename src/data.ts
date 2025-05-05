@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { Entry, Place, Product, placeProperties } from "./types";
+import { Entry, Place, PlaceJSON, Product, placeProperties } from "./types";
 
 export async function fetchData(path: string) {
   try {
@@ -55,17 +55,19 @@ export function parsePlaces(csvString: string, entries: Map<number, Entry[]>) {
     },
   }).data as Place[];
 
-  return parsed.map((v: Place) => ({
-    type: "Feature",
-    id: v["placeId"],
-    geometry: {
-      type: "Point",
-      coordinates: [v["lon"], v["lat"]],
-    },
-    properties: placeProperties.reduce((acc, header) => ({ ...acc, [header]: v[header] }), {
-      priceRating: getPriceRating(entries.get(v["placeId"])),
-    }),
-  }));
+  const places = new Map<number, PlaceJSON>();
+  parsed.forEach(({ placeId, lon, lat, ...place }) => {
+    places.set(placeId, {
+      type: "Feature",
+      id: placeId,
+      geometry: {
+        type: "Point",
+        coordinates: [lon, lat],
+      },
+      properties: { ...place, priceRating: getPriceRating(entries.get(placeId)) },
+    });
+  });
+  return places;
 }
 
 export function parseProducts(csvString: string) {
