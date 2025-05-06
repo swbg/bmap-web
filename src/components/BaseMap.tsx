@@ -96,7 +96,7 @@ export default function BaseMap() {
         if (!map.current) return;
         map.current.addImage("marker-sdf", sdfImage, { sdf: true });
 
-        // Makes sure style has loaded before any data is added
+        // Make sure style has loaded before any data is added
         setIsMapLoaded(true);
       };
     });
@@ -222,15 +222,6 @@ export default function BaseMap() {
       hoveredPlaceId = undefined;
     });
 
-    // Center map on clicked circle
-    // map.current.on("click", "places-markers", (e) => {
-    //   if (!e?.features) return;
-    //   if (!map.current) return;
-    //   map.current.flyTo({
-    //     center: e.features[0].geometry.coordinates,
-    //   });
-    // });
-
     // Change mouse cursor on hover
     map.current.on("mousemove", "places-markers", () => {
       if (!map.current) return;
@@ -253,12 +244,17 @@ export default function BaseMap() {
     type T = maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] };
     const selectPlace = (e: T) => {
       if (!e?.features) return;
-      if (e.features.length === 0) return;
       if (!map.current) return;
 
       const placeId = e.features[0].id;
       if (typeof placeId !== "number") return;
       setActivePlace(places.get(placeId));
+
+      map.current.flyTo({
+        center: (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+        zoom: Math.max(map.current.getZoom(), 16),
+        easing: (t) => 1 - Math.pow(1 - t, 5),
+      });
     };
     map.current.on("click", "places-markers", (e) => selectPlace(e));
     map.current.on("click", "places-names", (e) => selectPlace(e));
