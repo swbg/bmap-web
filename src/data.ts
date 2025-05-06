@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { Entry, Place, PlaceJSON, Product, placeProperties } from "./types";
+import { Entry, Place, PlaceJSON, Product } from "./types";
 
 export async function fetchData(path: string) {
   try {

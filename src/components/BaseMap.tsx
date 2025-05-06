@@ -16,13 +16,21 @@ export default function BaseMap() {
   const [places, setPlaces] = useState<Map<number, PlaceJSON> | null>(null);
   const [products, setProducts] = useState<Map<number, Product> | null>(null);
 
-  const [activePlace, setActivePlace] = useState<PlaceJSON | undefined>(undefined);
+  const [activePlace, setActivePlace_] = useState<PlaceJSON | undefined>(undefined);
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
 
-  const unsetActivePlace = (activePlace: PlaceJSON) => {
-    setActivePlace(undefined);
-    if (!map.current) return;
-    map.current.setFeatureState({ source: "places", id: activePlace.id }, { selected: false });
+  const setActivePlace = (newPlace: PlaceJSON | undefined) => {
+    setActivePlace_((activePlace) => {
+      if (!map.current) return newPlace;
+
+      if (activePlace) {
+        map.current.setFeatureState({ source: "places", id: activePlace.id }, { selected: false });
+      }
+      if (newPlace) {
+        map.current.setFeatureState({ source: "places", id: newPlace.id }, { selected: true });
+      }
+      return newPlace;
+    });
   };
 
   useEffect(() => {
@@ -62,6 +70,8 @@ export default function BaseMap() {
       style: "./osm_clean.json",
       center: center,
       zoom: zoom,
+      minZoom: 12,
+      maxZoom: 19,
     });
     map.current.addControl(
       new maplibregl.NavigationControl({
@@ -79,20 +89,16 @@ export default function BaseMap() {
       }),
     );
 
-    // Makes sure style has loaded before any data is added
     map.current.on("load", () => {
-      for (const [markerName, markerColor] of markerColors.entries()) {
-        const svgImage = new Image(50, 63);
-        svgImage.onload = () => {
-          if (!map.current) return;
-          map.current.addImage(markerName, svgImage);
-        };
-        const pin = `<svg viewBox="0 0 50 63" fill="${markerColor}" version="1.1" width="50" height="63" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"> <path stroke-width="3.32084" d="M 0.09369395,23.722748 C 0.09369395,10.857977 11.265833,0.39086988 25,0.39086988 c 13.734168,0 24.906306,10.46710712 24.906306,23.33187812 0,19.331528 -20.367713,35.653045 -23.568672,38.218063 -0.199083,0.159483 -0.331751,0.265833 -0.388953,0.316392 -0.26766,0.23412 -0.608129,0.351927 -0.948681,0.351927 -0.340469,0 -0.681021,-0.117807 -0.948515,-0.351927 -0.0572,-0.05056 -0.189786,-0.156743 -0.388704,-0.316143 C 20.46257,59.376706 0.09369395,43.054857 0.09369395,23.722748 Z M 25.000083,37.240895 c 6.80075,0 12.313844,-5.595866 12.313844,-12.498815 0,-16.3432445 -24.627687,-16.3432462 -24.627687,0 0,6.902949 5.513093,12.498815 12.313843,12.498815 z" style="stroke:#ffffff;stroke-width:3;stroke-dasharray:none;stroke-opacity:1" /></svg>`;
-        svgImage.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(pin);
-      }
+      const sdfImage = new Image(100, 115);
+      sdfImage.src = "./marker-sdf.png";
+      sdfImage.onload = () => {
+        if (!map.current) return;
+        map.current.addImage("marker-sdf", sdfImage, { sdf: true });
 
-      // TODO: Set isLoaded only when all markers have loaded
-      setIsMapLoaded(true);
+        // Makes sure style has loaded before any data is added
+        setIsMapLoaded(true);
+      };
     });
   }, [mapContainer.current, center, zoom]);
 
@@ -115,44 +121,66 @@ export default function BaseMap() {
       source: "places",
       type: "symbol",
       layout: {
-        "icon-image": [
-          // TypeScript makes it hard to generate this dynamically
-          "case",
-          ["!", ["to-boolean", ["get", "priceRating"]]],
-          "marker-grey",
-          ["<", ["get", "priceRating"], 0.3],
-          "marker-0",
-          ["<", ["get", "priceRating"], 0.33],
-          "marker-1",
-          ["<", ["get", "priceRating"], 0.36],
-          "marker-2",
-          ["<", ["get", "priceRating"], 0.39],
-          "marker-3",
-          ["<", ["get", "priceRating"], 0.42],
-          "marker-4",
-          ["<", ["get", "priceRating"], 0.45],
-          "marker-5",
-          ["<", ["get", "priceRating"], 0.48],
-          "marker-6",
-          ["<", ["get", "priceRating"], 0.51],
-          "marker-7",
-          ["<", ["get", "priceRating"], 0.54],
-          "marker-8",
-          "marker-9",
-        ],
+        "icon-image": "marker-sdf",
         "icon-size": [
           "interpolate",
           ["linear"],
           ["zoom"],
-          // zoom is 12 (or less) -> 40% size
+          // zoom is 12 (or less) -> 20% size
           12,
+          0.2,
+          // zoom is 19 (or greater) -> 40% size
+          19,
           0.4,
-          // zoom is 20 (or greater) -> 80% size
-          20,
-          0.8,
         ],
-        "icon-offset": [0, -30.0],
+        "icon-offset": [0, -50.0],
         "icon-overlap": "always",
+      },
+      paint: {
+        "icon-color": [
+          // TypeScript makes it hard to generate this dynamically
+          "case",
+          [
+            "any",
+            ["to-boolean", ["feature-state", "hover"]],
+            ["to-boolean", ["feature-state", "selected"]],
+          ],
+          markerColors.get("marker-active")!,
+          ["!", ["to-boolean", ["get", "priceRating"]]],
+          markerColors.get("marker-grey")!,
+          ["<", ["get", "priceRating"], 0.3],
+          markerColors.get("marker-0")!,
+          ["<", ["get", "priceRating"], 0.33],
+          markerColors.get("marker-1")!,
+          ["<", ["get", "priceRating"], 0.36],
+          markerColors.get("marker-2")!,
+          ["<", ["get", "priceRating"], 0.39],
+          markerColors.get("marker-3")!,
+          ["<", ["get", "priceRating"], 0.42],
+          markerColors.get("marker-4")!,
+          ["<", ["get", "priceRating"], 0.45],
+          markerColors.get("marker-5")!,
+          ["<", ["get", "priceRating"], 0.48],
+          markerColors.get("marker-6")!,
+          ["<", ["get", "priceRating"], 0.51],
+          markerColors.get("marker-7")!,
+          ["<", ["get", "priceRating"], 0.54],
+          markerColors.get("marker-8")!,
+          markerColors.get("marker-9")!,
+        ],
+        // "icon-halo-blur": 0.9,
+        "icon-halo-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          // zoom is 12 (or less)
+          12,
+          0.5,
+          // zoom is 19 (or greater)
+          19,
+          1.0,
+        ],
+        "icon-halo-color": "#ffffff",
       },
     });
     map.current.addLayer({
@@ -230,11 +258,7 @@ export default function BaseMap() {
 
       const placeId = e.features[0].id;
       if (typeof placeId !== "number") return;
-      if (placeId !== undefined) {
-        setActivePlace(places.get(placeId));
-        // Keep active place highlighted
-        map.current.setFeatureState({ source: "places", id: placeId }, { selected: true });
-      }
+      setActivePlace(places.get(placeId));
     };
     map.current.on("click", "places-markers", (e) => selectPlace(e));
     map.current.on("click", "places-names", (e) => selectPlace(e));
@@ -261,7 +285,7 @@ export default function BaseMap() {
           activePlace={activePlace}
           activeEntries={entries.get(activePlace.id)}
           products={products}
-          unsetActivePlace={() => unsetActivePlace(activePlace)}
+          unsetActivePlace={() => setActivePlace(undefined)}
         />
       )}
     </div>
