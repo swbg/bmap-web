@@ -2,8 +2,10 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { markerColors } from "../const";
-import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
-import { Entry, PlaceJSON, Product } from "../types";
+import { getSource, makeClickable, makeHoverable } from "../control";
+import { fetchData, parseEntries, parsePOIs, parsePlaces, parseProducts } from "../data";
+import { getMarkerLayout } from "../layout";
+import { Entry, POIJSON, PlaceJSON, Product } from "../types";
 import InfoPanel from "./InfoPanel";
 
 export default function BaseMap() {
@@ -15,38 +17,46 @@ export default function BaseMap() {
   const [entries, setEntries] = useState<Map<number, Entry[]> | null>(null);
   const [places, setPlaces] = useState<Map<number, PlaceJSON> | null>(null);
   const [products, setProducts] = useState<Map<number, Product> | null>(null);
+  const [pois, setPOIs] = useState<Map<number, POIJSON> | null>(null);
 
-  const [activePlace, setActivePlace_] = useState<PlaceJSON | undefined>(undefined);
+  const [activePlace, setActivePlace_] = useState<PlaceJSON | POIJSON | undefined>(undefined);
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
 
-  const setActivePlace = (newPlace: PlaceJSON | undefined) => {
+  const setActivePlace = (newPlace: PlaceJSON | POIJSON | undefined) => {
     setActivePlace_((activePlace) => {
       if (!map.current) return newPlace;
 
       if (activePlace) {
-        map.current.setFeatureState({ source: "places", id: activePlace.id }, { selected: false });
+        const source = getSource(activePlace);
+        map.current.setFeatureState({ source, id: activePlace.id }, { selected: false });
       }
       if (newPlace) {
-        map.current.setFeatureState({ source: "places", id: newPlace.id }, { selected: true });
+        const source = getSource(newPlace);
+        map.current.setFeatureState({ source, id: newPlace.id }, { selected: true });
       }
       return newPlace;
     });
   };
 
   useEffect(() => {
-    const fetchEntries = async () => {
+    (async () => {
+      // Fetch entries
       const csvString = await fetchData("./entries.csv");
       if (!csvString) return;
       setEntries(parseEntries(csvString));
-    };
-    const fetchProducts = async () => {
+    })();
+    (async () => {
+      // Fetch products
       const csvString = await fetchData("./products.csv");
       if (!csvString) return;
       setProducts(parseProducts(csvString));
-    };
-
-    fetchEntries();
-    fetchProducts();
+    })();
+    (async () => {
+      // Fetch POIs
+      const csvString = await fetchData("./pois.csv");
+      if (!csvString) return;
+      setPOIs(parsePOIs(csvString));
+    })();
   }, []);
 
   useEffect(() => {
@@ -90,15 +100,20 @@ export default function BaseMap() {
     );
 
     map.current.on("load", () => {
-      const sdfImage = new Image(100, 115);
-      sdfImage.src = "./marker-sdf.png";
-      sdfImage.onload = () => {
-        if (!map.current) return;
-        map.current.addImage("marker-sdf", sdfImage, { sdf: true });
-
-        // Make sure style has loaded before any data is added
-        setIsMapLoaded(true);
-      };
+      // Make sure style has loaded before any data is added
+      Promise.all(
+        ["marker-circle", "marker-drop"].map((markerName) => {
+          const img = new Image(100, 115);
+          img.src = `./${markerName}.png`;
+          return new Promise((resolve) => {
+            img.onload = () => {
+              if (!map.current) return;
+              map.current.addImage(markerName, img, { sdf: true });
+              resolve(0);
+            };
+          });
+        }),
+      ).then(() => setIsMapLoaded(true));
     });
   }, [mapContainer.current, center, zoom]);
 
@@ -120,22 +135,7 @@ export default function BaseMap() {
       id: "places-markers",
       source: "places",
       type: "symbol",
-      layout: {
-        "icon-image": "marker-sdf",
-        "icon-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          // zoom is 12 (or less) -> 20% size
-          12,
-          0.2,
-          // zoom is 19 (or greater) -> 40% size
-          19,
-          0.4,
-        ],
-        "icon-offset": [0, -50.0],
-        "icon-overlap": "always",
-      },
+      layout: getMarkerLayout("marker-circle"),
       paint: {
         "icon-color": [
           // TypeScript makes it hard to generate this dynamically
@@ -201,63 +201,10 @@ export default function BaseMap() {
       },
     });
 
-    // Grow marker circles on hover
-    let hoveredPlaceId: string | number | undefined = undefined;
-    map.current.on("mousemove", "places-markers", (e) => {
-      if (!e?.features) return;
-      if (!map.current) return;
-      if (e.features.length > 0) {
-        if (hoveredPlaceId !== undefined) {
-          map.current.setFeatureState({ source: "places", id: hoveredPlaceId }, { hover: false });
-        }
-        hoveredPlaceId = e.features[0].id;
-        map.current.setFeatureState({ source: "places", id: hoveredPlaceId }, { hover: true });
-      }
-    });
-    map.current.on("mouseleave", "places-markers", () => {
-      if (!map.current) return;
-      if (hoveredPlaceId !== undefined) {
-        map.current.setFeatureState({ source: "places", id: hoveredPlaceId }, { hover: false });
-      }
-      hoveredPlaceId = undefined;
-    });
-
-    // Change mouse cursor on hover
-    map.current.on("mousemove", "places-markers", () => {
-      if (!map.current) return;
-      map.current.getCanvas().style.cursor = "pointer";
-    });
-    map.current.on("mouseleave", "places-markers", () => {
-      if (!map.current) return;
-      map.current.getCanvas().style.cursor = "";
-    });
-    map.current.on("mousemove", "places-names", () => {
-      if (!map.current) return;
-      map.current.getCanvas().style.cursor = "pointer";
-    });
-    map.current.on("mouseleave", "places-names", () => {
-      if (!map.current) return;
-      map.current.getCanvas().style.cursor = "";
-    });
-
-    // Select places by clicking
-    type T = maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] };
-    const selectPlace = (e: T) => {
-      if (!e?.features) return;
-      if (!map.current) return;
-
-      const placeId = e.features[0].id;
-      if (typeof placeId !== "number") return;
-      setActivePlace(places.get(placeId));
-
-      map.current.flyTo({
-        center: (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-        zoom: Math.max(map.current.getZoom(), 16),
-        easing: (t) => 1 - Math.pow(1 - t, 5),
-      });
-    };
-    map.current.on("click", "places-markers", (e) => selectPlace(e));
-    map.current.on("click", "places-names", (e) => selectPlace(e));
+    makeHoverable(map, "places", "places-markers");
+    makeHoverable(map, null, "places-names");
+    makeClickable(map, "places", "places-markers", setActivePlace, places);
+    makeClickable(map, "places", "places-names", setActivePlace, places);
 
     return () => {
       if (!map.current) return;
@@ -272,6 +219,65 @@ export default function BaseMap() {
       }
     };
   }, [map.current, isMapLoaded, entries, places, products]);
+
+  useEffect(() => {
+    if (!map.current) return;
+    if (!isMapLoaded) return;
+    if (!pois) return;
+
+    map.current.addSource("drinking-fountains", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: Array.from(pois.values()).filter(
+          ({ properties: { placeType } }) => placeType === "drinking-fountain",
+        ),
+      },
+    });
+    map.current.addLayer({
+      id: "drinking-fountains-markers",
+      source: "drinking-fountains",
+      type: "symbol",
+      layout: getMarkerLayout("marker-drop"),
+      paint: {
+        "icon-color": [
+          "case",
+          [
+            "any",
+            ["to-boolean", ["feature-state", "hover"]],
+            ["to-boolean", ["feature-state", "selected"]],
+          ],
+          markerColors.get("marker-active")!,
+          "#2faad4",
+        ],
+        "icon-halo-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          // zoom is 12 (or less)
+          12,
+          0.5,
+          // zoom is 19 (or greater)
+          19,
+          1.0,
+        ],
+        "icon-halo-color": "#ffffff",
+      },
+    });
+
+    makeHoverable(map, "drinking-fountains", "drinking-fountains-markers");
+    makeClickable(map, "drinking-fountains", "drinking-fountains-markers", setActivePlace, pois);
+
+    return () => {
+      if (!map.current) return;
+      if (map.current.getLayer("drinking-fountains-markers")) {
+        map.current.removeLayer("drinking-fountains-markers");
+      }
+      if (map.current.getSource("drinking-fountains")) {
+        map.current.removeSource("drinking-fountains");
+      }
+    };
+  }, [map.current, isMapLoaded, pois]);
 
   return (
     <div className="map">

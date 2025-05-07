@@ -24,13 +24,16 @@ export const placeProperties = [
   "placeId",
 ] as (keyof Place)[];
 
-export type PlaceJSON = {
+type GeoJSONPoint = {
   type: "Feature";
   id: number;
   geometry: {
     type: "Point";
     coordinates: [number, number];
   };
+};
+
+export type PlaceJSON = GeoJSONPoint & {
   properties: {
     placeName: string;
     address: string;
@@ -56,4 +59,22 @@ export type Product = {
   brandName: string;
   productName: string;
   productType: string;
+};
+
+export type POI = {
+  lat: number;
+  lon: number;
+  placeName: string;
+  placeType: string;
+  note: string;
+  source: string;
+};
+
+export type POIJSON = GeoJSONPoint & {
+  properties: {
+    placeName: string;
+    placeType: string;
+    note: string;
+    source: string;
+  };
 };
