@@ -1,5 +1,5 @@
 import Papa from "papaparse";
-import { Entry, Place, PlaceJSON, Product } from "./types";
+import { Entry, POI, POIJSON, Place, PlaceJSON, Product } from "./types";
 
 export async function fetchData(path: string) {
   try {
@@ -14,8 +14,6 @@ export async function fetchData(path: string) {
 }
 
 export function parseEntries(csvString: string) {
-  const entries = new Map<number, Entry[]>();
-
   type T = (Entry & { placeId: number })[];
   const parsed = Papa.parse(csvString, {
     header: true,
@@ -25,6 +23,7 @@ export function parseEntries(csvString: string) {
     },
   }).data as T;
 
+  const entries = new Map<number, Entry[]>();
   parsed.forEach(({ placeId, ...entry }) => {
     if (entries.has(placeId)) {
       entries.get(placeId)!.push(entry);
@@ -71,8 +70,6 @@ export function parsePlaces(csvString: string, entries: Map<number, Entry[]>) {
 }
 
 export function parseProducts(csvString: string) {
-  const products = new Map<number, Product>();
-
   type T = (Product & { productId: number })[];
   const parsed = Papa.parse(csvString, {
     header: true,
@@ -82,6 +79,7 @@ export function parseProducts(csvString: string) {
     },
   }).data as T;
 
+  const products = new Map<number, Product>();
   parsed.forEach(({ productId, ...product }) => {
     if (products.has(productId)) {
       throw new Error(`Duplicate 'productId' ${productId}`);
@@ -90,4 +88,28 @@ export function parseProducts(csvString: string) {
     }
   });
   return products;
+}
+
+export function parsePOIs(csvString: string) {
+  const parsed = Papa.parse(csvString, {
+    header: true,
+    transform: (v: string, header: string) => {
+      if (["lon", "lat"].indexOf(header) >= 0) return Number(v);
+      return v;
+    },
+  }).data as POI[];
+
+  const pois = new Map<number, POIJSON>();
+  parsed.forEach(({ lat, lon, ...poi }, idx) => {
+    pois.set(idx, {
+      type: "Feature",
+      id: idx,
+      geometry: {
+        type: "Point",
+        coordinates: [lon, lat],
+      },
+      properties: poi,
+    } as POIJSON);
+  });
+  return pois;
 }

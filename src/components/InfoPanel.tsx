@@ -1,8 +1,9 @@
 import Cross from "../assets/cross.svg";
-import { Entry, PlaceJSON, Product } from "../types";
+import { getSource } from "../control";
+import { Entry, POIJSON, PlaceJSON, Product } from "../types";
 import { formatPhone, formatPrice } from "../utils";
 
-export default function InfoPanel({
+function PlacePanel({
   activePlace,
   activeEntries,
   products,
@@ -56,4 +57,49 @@ export default function InfoPanel({
       )}
     </div>
   );
+}
+
+function POIPanel({
+  activePlace,
+  unsetActivePlace,
+}: {
+  activePlace: POIJSON;
+  unsetActivePlace: () => void;
+}) {
+  const p = activePlace.properties;
+  return (
+    <div className="info-panel">
+      <div className="info-close" onClick={unsetActivePlace}>
+        <img src={Cross} />
+      </div>
+      <h3>{p.placeName}</h3>
+      <p>{p.note}</p>
+      <p>{p.source}</p>
+    </div>
+  );
+}
+
+export default function InfoPanel({
+  activePlace,
+  activeEntries,
+  products,
+  unsetActivePlace,
+}: {
+  activePlace: PlaceJSON | POIJSON;
+  activeEntries: Entry[] | undefined;
+  products: Map<number, Product>;
+  unsetActivePlace: () => void;
+}) {
+  if (getSource(activePlace) === "drinking-fountains") {
+    return <POIPanel activePlace={activePlace as POIJSON} unsetActivePlace={unsetActivePlace} />;
+  } else {
+    return (
+      <PlacePanel
+        activePlace={activePlace as PlaceJSON}
+        activeEntries={activeEntries}
+        products={products}
+        unsetActivePlace={unsetActivePlace}
+      />
+    );
+  }
 }

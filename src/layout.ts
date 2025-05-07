@@ -1,0 +1,20 @@
+import { PropertyValueSpecification, SymbolLayerSpecification } from "maplibre-gl";
+
+export function getMarkerLayout(markerName: string) {
+  return {
+    "icon-image": markerName,
+    "icon-size": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      // zoom is 12 (or less) -> 20% size
+      12,
+      0.2,
+      // zoom is 19 (or greater) -> 40% size
+      19,
+      0.4,
+    ],
+    "icon-offset": [0, -50.0],
+    "icon-overlap": "always" as PropertyValueSpecification<"always">,
+  } as SymbolLayerSpecification["layout"];
+}
