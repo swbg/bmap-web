@@ -2,10 +2,10 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { markerColors } from "../const";
-import { getSource, makeClickable, makeHoverable } from "../control";
+import { getLocationState, getSource, makeClickable, makeHoverable } from "../control";
 import { fetchData, parseEntries, parsePOIs, parsePlaces, parseProducts } from "../data";
-import { getMarkerLayout } from "../layout";
-import { Entry, POIJSON, PlaceJSON, Product } from "../types";
+import { getMarkerLayout, getMarkerPaint } from "../layout";
+import { Entry, FeaturePoint, POIJSON, PlaceJSON, Product } from "../types";
 import InfoPanel from "./InfoPanel";
 
 export default function BaseMap() {
@@ -22,6 +22,20 @@ export default function BaseMap() {
   const [activePlace, setActivePlace_] = useState<PlaceJSON | POIJSON | undefined>(undefined);
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
 
+  const [hoveredPoint, setHoveredPoint] = useState<FeaturePoint | null>(null);
+
+  useEffect(() => {
+    if (!map.current) return;
+    if (hoveredPoint !== null) {
+      const { source, id } = hoveredPoint;
+      map.current.setFeatureState({ source, id }, { hover: true });
+      return () => {
+        if (!map.current) return;
+        map.current.setFeatureState({ source, id }, { hover: false });
+      };
+    }
+  }, [map.current, hoveredPoint]);
+
   const setActivePlace = (newPlace: PlaceJSON | POIJSON | undefined) => {
     setActivePlace_((activePlace) => {
       if (!map.current) return newPlace;
@@ -29,10 +43,18 @@ export default function BaseMap() {
       if (activePlace) {
         const source = getSource(activePlace);
         map.current.setFeatureState({ source, id: activePlace.id }, { selected: false });
+        if (!newPlace) history.replaceState(null, "", " ");
       }
       if (newPlace) {
         const source = getSource(newPlace);
         map.current.setFeatureState({ source, id: newPlace.id }, { selected: true });
+        history.replaceState(null, "", `/${source}/${newPlace.id}`);
+
+        map.current.flyTo({
+          center: newPlace.geometry.coordinates,
+          zoom: Math.max(map.current.getZoom(), 16),
+          easing: (t) => 1 - Math.pow(1 - t, 5),
+        });
       }
       return newPlace;
     });
@@ -41,31 +63,40 @@ export default function BaseMap() {
   useEffect(() => {
     (async () => {
       // Fetch entries
-      const csvString = await fetchData("./entries.csv");
+      const csvString = await fetchData("/entries.csv");
       if (!csvString) return;
       setEntries(parseEntries(csvString));
     })();
     (async () => {
       // Fetch products
-      const csvString = await fetchData("./products.csv");
+      const csvString = await fetchData("/products.csv");
       if (!csvString) return;
       setProducts(parseProducts(csvString));
     })();
     (async () => {
       // Fetch POIs
-      const csvString = await fetchData("./pois.csv");
+      const csvString = await fetchData("/pois.csv");
       if (!csvString) return;
-      setPOIs(parsePOIs(csvString));
+
+      const pois = parsePOIs(csvString);
+      setPOIs(pois);
+
+      const { source, id } = getLocationState() || { source: null, id: null };
+      if (source === "drinking-fountains") setActivePlace(pois.get(id));
     })();
   }, []);
 
   useEffect(() => {
     if (!entries) return;
     const fetchPlaces = async () => {
-      const csvString = await fetchData("./places.csv");
+      const csvString = await fetchData("/places.csv");
       if (!csvString) return;
 
-      setPlaces(parsePlaces(csvString, entries));
+      const places = parsePlaces(csvString, entries);
+      setPlaces(places);
+
+      const { source, id } = getLocationState() || { source: null, id: null };
+      if (source === "places") setActivePlace(places.get(id));
     };
 
     fetchPlaces();
@@ -77,7 +108,7 @@ export default function BaseMap() {
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "./osm_clean.json",
+      style: "/osm_clean.json",
       center: center,
       zoom: zoom,
       minZoom: 12,
@@ -104,7 +135,7 @@ export default function BaseMap() {
       Promise.all(
         ["marker-circle", "marker-drop"].map((markerName) => {
           const img = new Image(100, 115);
-          img.src = `./${markerName}.png`;
+          img.src = `/${markerName}.png`;
           return new Promise((resolve) => {
             img.onload = () => {
               if (!map.current) return;
@@ -135,8 +166,18 @@ export default function BaseMap() {
       id: "places-markers",
       source: "places",
       type: "symbol",
-      layout: getMarkerLayout("marker-circle"),
+      layout: {
+        ...getMarkerLayout("marker-circle"),
+        //
+        "text-field": ["get", "placeName"],
+        "text-font": ["Open Sans Regular"],
+        "text-offset": [0, 0],
+        "text-anchor": "top",
+        "text-line-height": 1.05,
+        "text-optional": true,
+      },
       paint: {
+        ...getMarkerPaint(),
         "icon-color": [
           // TypeScript makes it hard to generate this dynamically
           "case",
@@ -168,51 +209,19 @@ export default function BaseMap() {
           markerColors.get("marker-8")!,
           markerColors.get("marker-9")!,
         ],
-        // "icon-halo-blur": 0.9,
-        "icon-halo-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          // zoom is 12 (or less)
-          12,
-          0.5,
-          // zoom is 19 (or greater)
-          19,
-          1.0,
-        ],
-        "icon-halo-color": "#ffffff",
-      },
-    });
-    map.current.addLayer({
-      id: "places-names",
-      source: "places",
-      type: "symbol",
-      minzoom: 13,
-      layout: {
-        "text-field": ["get", "placeName"],
-        "text-font": ["Open Sans Regular"],
-        "text-offset": [0, 0],
-        "text-anchor": "top",
-        "text-line-height": 1.05,
-      },
-      paint: {
+        //
         "text-halo-width": 1.5,
         "text-halo-color": "#ffffff",
       },
     });
 
-    makeHoverable(map, "places", "places-markers");
-    makeHoverable(map, null, "places-names");
+    makeHoverable(map, "places", "places-markers", setHoveredPoint);
     makeClickable(map, "places", "places-markers", setActivePlace, places);
-    makeClickable(map, "places", "places-names", setActivePlace, places);
 
     return () => {
       if (!map.current) return;
       if (map.current.getLayer("places-markers")) {
         map.current.removeLayer("places-markers");
-      }
-      if (map.current.getLayer("places-names")) {
-        map.current.removeLayer("places-names");
       }
       if (map.current.getSource("places")) {
         map.current.removeSource("places");
@@ -240,6 +249,7 @@ export default function BaseMap() {
       type: "symbol",
       layout: getMarkerLayout("marker-drop"),
       paint: {
+        ...getMarkerPaint(),
         "icon-color": [
           "case",
           [
@@ -250,22 +260,10 @@ export default function BaseMap() {
           markerColors.get("marker-active")!,
           "#2faad4",
         ],
-        "icon-halo-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          // zoom is 12 (or less)
-          12,
-          0.5,
-          // zoom is 19 (or greater)
-          19,
-          1.0,
-        ],
-        "icon-halo-color": "#ffffff",
       },
     });
 
-    makeHoverable(map, "drinking-fountains", "drinking-fountains-markers");
+    makeHoverable(map, "drinking-fountains", "drinking-fountains-markers", setHoveredPoint);
     makeClickable(map, "drinking-fountains", "drinking-fountains-markers", setActivePlace, pois);
 
     return () => {

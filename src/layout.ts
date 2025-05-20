@@ -18,3 +18,20 @@ export function getMarkerLayout(markerName: string) {
     "icon-overlap": "always" as PropertyValueSpecification<"always">,
   } as SymbolLayerSpecification["layout"];
 }
+
+export function getMarkerPaint() {
+  return {
+    "icon-halo-width": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      // zoom is 12 (or less)
+      12,
+      0.5,
+      // zoom is 19 (or greater)
+      19,
+      1.0,
+    ],
+    "icon-halo-color": "#ffffff",
+  } as SymbolLayerSpecification["paint"];
+}

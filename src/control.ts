@@ -1,4 +1,4 @@
-import { POIJSON, PlaceJSON } from "./types";
+import { FeaturePoint, POIJSON, PlaceJSON } from "./types";
 
 export function getSource(place: PlaceJSON | POIJSON) {
   if (place.properties.placeType === "drinking-fountain") return "drinking-fountains";
@@ -9,6 +9,7 @@ export function makeHoverable(
   map: React.MutableRefObject<maplibregl.Map | null>,
   source: string | null,
   layer: string,
+  setHoveredPoint: React.Dispatch<React.SetStateAction<FeaturePoint | null>>,
 ) {
   if (!map.current) return;
 
@@ -24,24 +25,17 @@ export function makeHoverable(
   if (source === null) return;
 
   // Change color on hover
-  let hoveredId: string | number | undefined = undefined;
   map.current.on("mousemove", layer, (e) => {
     if (!e?.features) return;
     if (!map.current) return;
     if (e.features.length > 0) {
-      if (hoveredId !== undefined) {
-        map.current.setFeatureState({ source, id: hoveredId }, { hover: false });
-      }
-      hoveredId = e.features[0].id;
-      map.current.setFeatureState({ source, id: hoveredId }, { hover: true });
+      const hoveredId = e.features[0].id;
+      if (typeof hoveredId === "number") setHoveredPoint({ source, id: hoveredId });
     }
   });
   map.current.on("mouseleave", layer, () => {
     if (!map.current) return;
-    if (hoveredId !== undefined) {
-      map.current.setFeatureState({ source, id: hoveredId }, { hover: false });
-    }
-    hoveredId = undefined;
+    setHoveredPoint((prev) => (prev ? (prev.source === source ? null : prev) : prev));
   });
 }
 
@@ -63,13 +57,17 @@ export function makeClickable(
     const placeId = e.features[0].id;
     if (typeof placeId !== "number") return;
     setActivePlace(placeMap.get(placeId), source);
-
-    map.current.flyTo({
-      center: (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-      zoom: Math.max(map.current.getZoom(), 16),
-      easing: (t) => 1 - Math.pow(1 - t, 5),
-    });
   };
 
   map.current.on("click", layer, (e) => selectPlace(e));
+}
+
+export function getLocationState(): FeaturePoint | null {
+  const pname = window.location.pathname.split("/");
+  if (pname.length !== 2) return null;
+  if (["places", "drinking-fountains"].indexOf(pname[0]) < 0) return null;
+
+  const placeId = parseInt(pname[1]);
+  if (isNaN(placeId)) return null;
+  return { source: pname[0], id: placeId };
 }
