@@ -33,6 +33,11 @@ type GeoJSONPoint = {
   };
 };
 
+export type FeaturePoint = {
+  source: string;
+  id: number;
+};
+
 export type PlaceJSON = GeoJSONPoint & {
   properties: {
     placeName: string;
