@@ -1,15 +1,12 @@
-import { FeaturePoint, POIJSON, PlaceJSON } from "./types";
-
-export function getSource(place: PlaceJSON | POIJSON) {
-  if (place.properties.placeType === "drinking-fountain") return "drinking-fountains";
-  return "places";
-}
+import { placeToGeoJSON } from "./data";
+import { Entry, Place, PlaceFeature } from "./types";
+import { getSource } from "./utils";
 
 export function makeHoverable(
   map: React.MutableRefObject<maplibregl.Map | null>,
   source: string | null,
   layer: string,
-  setHoveredPoint: React.Dispatch<React.SetStateAction<FeaturePoint | null>>,
+  setHoveredPlace: React.Dispatch<React.SetStateAction<PlaceFeature | null>>,
 ) {
   if (!map.current) return;
 
@@ -30,12 +27,12 @@ export function makeHoverable(
     if (!map.current) return;
     if (e.features.length > 0) {
       const hoveredId = e.features[0].id;
-      if (typeof hoveredId === "number") setHoveredPoint({ source, id: hoveredId });
+      if (typeof hoveredId === "number") setHoveredPlace({ source, id: hoveredId });
     }
   });
   map.current.on("mouseleave", layer, () => {
     if (!map.current) return;
-    setHoveredPoint((prev) => (prev ? (prev.source === source ? null : prev) : prev));
+    setHoveredPlace((prev) => (prev ? (prev.source === source ? null : prev) : prev));
   });
 }
 
@@ -43,8 +40,7 @@ export function makeClickable(
   map: React.MutableRefObject<maplibregl.Map | null>,
   source: string,
   layer: string,
-  setActivePlace: (newPlace: PlaceJSON | POIJSON | undefined, source: string) => void,
-  placeMap: Map<number, PlaceJSON> | Map<number, POIJSON>,
+  setActivePlace: (newPlace: PlaceFeature | undefined) => void,
 ) {
   if (!map.current) return;
 
@@ -56,18 +52,27 @@ export function makeClickable(
 
     const placeId = e.features[0].id;
     if (typeof placeId !== "number") return;
-    setActivePlace(placeMap.get(placeId), source);
+    setActivePlace({ source, id: placeId });
   };
 
   map.current.on("click", layer, (e) => selectPlace(e));
 }
 
-export function getLocationState(): FeaturePoint | null {
-  const pname = window.location.pathname.split("/");
-  if (pname.length !== 2) return null;
-  if (["places", "drinking-fountains"].indexOf(pname[0]) < 0) return null;
+export function addPlacesSource(
+  map: React.MutableRefObject<maplibregl.Map | null>,
+  source: string,
+  places: Map<number, Place>,
+  entries: Map<number, Entry[]> | null,
+) {
+  if (!map.current) return;
 
-  const placeId = parseInt(pname[1]);
-  if (isNaN(placeId)) return null;
-  return { source: pname[0], id: placeId };
+  map.current.addSource(source, {
+    type: "geojson",
+    data: {
+      type: "FeatureCollection",
+      features: Array.from(places.values())
+        .filter((place) => getSource(place) === source)
+        .map((place) => placeToGeoJSON(place, entries)),
+    },
+  });
 }

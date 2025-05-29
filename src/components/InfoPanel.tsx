@@ -1,41 +1,49 @@
-import Cross from "../assets/cross.svg";
-import { getSource } from "../control";
-import { Entry, POIJSON, PlaceJSON, Product } from "../types";
+import { Entry, Place, Product } from "../types";
+import { getSource } from "../utils";
 import { formatPhone, formatPrice } from "../utils";
+import { CloseButton } from "./Buttons";
 
-function PlacePanel({
+function showOptional(value: string | undefined) {
+  return value && <p>{value}</p>;
+}
+
+function googlifyAddress(address: string | undefined) {
+  return (
+    address && (
+      <p>
+        <a
+          target="_blank"
+          href={`https://www.google.com/maps/place/${encodeURIComponent(address)}/`}
+        >
+          {address}
+        </a>
+      </p>
+    )
+  );
+}
+
+function GastroPanel({
   activePlace,
   activeEntries,
   products,
   unsetActivePlace,
 }: {
-  activePlace: PlaceJSON;
+  activePlace: Place;
   activeEntries: Entry[] | undefined;
   products: Map<number, Product>;
   unsetActivePlace: () => void;
 }) {
-  const p = activePlace.properties;
   return (
     <div className="info-panel">
-      <div className="info-close" onClick={unsetActivePlace}>
-        <img src={Cross} />
-      </div>
-      <h3>{p.placeName}</h3>
-      {p.address && (
+      <CloseButton onClick={unsetActivePlace} />
+      <h3>{activePlace.placeName}</h3>
+      {showOptional(activePlace.placeType)}
+      {googlifyAddress(activePlace.address)}
+      {activePlace.phone && <p>{formatPhone(activePlace.phone)}</p>}
+      {activePlace.website && (
         <p>
-          <a
-            target="_blank"
-            href={`https://www.google.com/maps/place/${encodeURIComponent(p.address)}/`}
-          >
-            {p.address}
-          </a>
-        </p>
-      )}
-      {p.phone && <p>{formatPhone(p.phone)}</p>}
-      {p.website && (
-        <p>
-          <a target="_blank" href={p.website}>
-            {p.website}
+          <a target="_blank" href={activePlace.website}>
+            {activePlace.website}
           </a>
         </p>
       )}
@@ -59,22 +67,54 @@ function PlacePanel({
   );
 }
 
-function POIPanel({
+function KioskPanel({
   activePlace,
   unsetActivePlace,
 }: {
-  activePlace: POIJSON;
+  activePlace: Place;
   unsetActivePlace: () => void;
 }) {
-  const p = activePlace.properties;
+  const breakify = (s: string) => {
+    const l = s.split("Uhr ");
+    return l.reduce<JSX.Element[]>((acc, e, i) => {
+      if (i < l.length - 1) {
+        return [...acc, <span key={2 * i}>{e + "Uhr"}</span>, <br key={2 * i + 1} />];
+      } else {
+        return [...acc, <span key={2 * i}>{e}</span>];
+      }
+    }, []);
+  };
+
   return (
     <div className="info-panel">
-      <div className="info-close" onClick={unsetActivePlace}>
-        <img src={Cross} />
-      </div>
-      <h3>{p.placeName}</h3>
-      <p>{p.note}</p>
-      <p>{p.source}</p>
+      <CloseButton onClick={unsetActivePlace} />
+      <h3>{activePlace.placeName}</h3>
+      {showOptional(activePlace.placeType)}
+      {googlifyAddress(activePlace.address)}
+      {activePlace.note && <p>{breakify(activePlace.note)}</p>}
+    </div>
+  );
+}
+
+function GenericPanel({
+  activePlace,
+  unsetActivePlace,
+}: {
+  activePlace: Place;
+  unsetActivePlace: () => void;
+}) {
+  let source = "";
+
+  if (activePlace.placeType == "Trinkbrunnen") {
+    source = "dl-de/by-2-0: Landeshauptstadt München - opendata.muenchen.de";
+  }
+
+  return (
+    <div className="info-panel">
+      <CloseButton onClick={unsetActivePlace} />
+      <h3>{activePlace.placeName}</h3>
+      <p>{activePlace.note}</p>
+      <p>{source}</p>
     </div>
   );
 }
@@ -85,21 +125,23 @@ export default function InfoPanel({
   products,
   unsetActivePlace,
 }: {
-  activePlace: PlaceJSON | POIJSON;
+  activePlace: Place;
   activeEntries: Entry[] | undefined;
   products: Map<number, Product>;
   unsetActivePlace: () => void;
 }) {
-  if (getSource(activePlace) === "drinking-fountains") {
-    return <POIPanel activePlace={activePlace as POIJSON} unsetActivePlace={unsetActivePlace} />;
-  } else {
-    return (
-      <PlacePanel
-        activePlace={activePlace as PlaceJSON}
-        activeEntries={activeEntries}
-        products={products}
-        unsetActivePlace={unsetActivePlace}
-      />
-    );
+  if (getSource(activePlace) === "drop") {
+    return <GenericPanel activePlace={activePlace} unsetActivePlace={unsetActivePlace} />;
   }
+  if (getSource(activePlace) === "bag") {
+    return <KioskPanel activePlace={activePlace} unsetActivePlace={unsetActivePlace} />;
+  }
+  return (
+    <GastroPanel
+      activePlace={activePlace}
+      activeEntries={activeEntries}
+      products={products}
+      unsetActivePlace={unsetActivePlace}
+    />
+  );
 }
