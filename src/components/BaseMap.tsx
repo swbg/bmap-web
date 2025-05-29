@@ -2,11 +2,14 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { markerColors } from "../const";
-import { getLocationState, getSource, makeClickable, makeHoverable } from "../control";
-import { fetchData, parseEntries, parsePOIs, parsePlaces, parseProducts } from "../data";
+import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
-import { Entry, FeaturePoint, POIJSON, PlaceJSON, Product } from "../types";
+import { addPlacesSource, makeClickable, makeHoverable } from "../map";
+import { Entry, Place, PlaceFeature, Product } from "../types";
+import { getLocationState } from "../utils";
+import { SearchButton } from "./Buttons";
 import InfoPanel from "./InfoPanel";
+import SearchBar from "./SearchBar";
 
 export default function BaseMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -14,47 +17,49 @@ export default function BaseMap() {
   const center = [11.575892981950567, 48.137836512295905] as [number, number]; // lon, lat
   const zoom = 14;
 
+  const [places, setPlaces] = useState<Map<number, Place> | null>(null);
   const [entries, setEntries] = useState<Map<number, Entry[]> | null>(null);
-  const [places, setPlaces] = useState<Map<number, PlaceJSON> | null>(null);
   const [products, setProducts] = useState<Map<number, Product> | null>(null);
-  const [pois, setPOIs] = useState<Map<number, POIJSON> | null>(null);
 
-  const [activePlace, setActivePlace_] = useState<PlaceJSON | POIJSON | undefined>(undefined);
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
+  const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
 
-  const [hoveredPoint, setHoveredPoint] = useState<FeaturePoint | null>(null);
+  const [hoveredPlace, setHoveredPlace] = useState<PlaceFeature | null>(null);
+  const [activePlace, setActivePlace_] = useState<PlaceFeature | undefined>(undefined);
 
   useEffect(() => {
     if (!map.current) return;
-    if (hoveredPoint !== null) {
-      const { source, id } = hoveredPoint;
-      map.current.setFeatureState({ source, id }, { hover: true });
+    if (hoveredPlace !== null) {
+      map.current.setFeatureState(hoveredPlace, { hover: true });
       return () => {
         if (!map.current) return;
-        map.current.setFeatureState({ source, id }, { hover: false });
+        map.current.setFeatureState(hoveredPlace, { hover: false });
       };
     }
-  }, [map.current, hoveredPoint]);
+  }, [map.current, hoveredPlace]);
 
-  const setActivePlace = (newPlace: PlaceJSON | POIJSON | undefined) => {
+  const setActivePlace = (newPlace: PlaceFeature | undefined) => {
     setActivePlace_((activePlace) => {
       if (!map.current) return newPlace;
 
       if (activePlace) {
-        const source = getSource(activePlace);
-        map.current.setFeatureState({ source, id: activePlace.id }, { selected: false });
+        map.current.setFeatureState(activePlace, { selected: false });
         if (!newPlace) history.replaceState(null, "", " ");
       }
       if (newPlace) {
-        const source = getSource(newPlace);
-        map.current.setFeatureState({ source, id: newPlace.id }, { selected: true });
-        history.replaceState(null, "", `/${source}/${newPlace.id}`);
+        map.current.setFeatureState(newPlace, { selected: true });
+        history.replaceState(null, "", `/${newPlace.source}/${newPlace.id}`);
 
-        map.current.flyTo({
-          center: newPlace.geometry.coordinates,
-          zoom: Math.max(map.current.getZoom(), 16),
-          easing: (t) => 1 - Math.pow(1 - t, 5),
-        });
+        if (places) {
+          const place = places.get(newPlace.id);
+          if (place) {
+            map.current.flyTo({
+              center: [place.lon, place.lat],
+              zoom: Math.max(map.current.getZoom(), 16),
+              easing: (t) => 1 - Math.pow(1 - t, 5),
+            });
+          }
+        }
       }
       return newPlace;
     });
@@ -74,33 +79,15 @@ export default function BaseMap() {
       setProducts(parseProducts(csvString));
     })();
     (async () => {
-      // Fetch POIs
-      const csvString = await fetchData("/pois.csv");
-      if (!csvString) return;
-
-      const pois = parsePOIs(csvString);
-      setPOIs(pois);
-
-      const { source, id } = getLocationState() || { source: null, id: null };
-      if (source === "drinking-fountains") setActivePlace(pois.get(id));
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (!entries) return;
-    const fetchPlaces = async () => {
+      // Fetch places
       const csvString = await fetchData("/places.csv");
       if (!csvString) return;
 
-      const places = parsePlaces(csvString, entries);
+      const places = parsePlaces(csvString);
       setPlaces(places);
-
-      const { source, id } = getLocationState() || { source: null, id: null };
-      if (source === "places") setActivePlace(places.get(id));
-    };
-
-    fetchPlaces();
-  }, [entries]);
+      // console.log("setPlaces", places);
+    })();
+  }, []);
 
   useEffect(() => {
     if (map.current) return;
@@ -133,7 +120,7 @@ export default function BaseMap() {
     map.current.on("load", () => {
       // Make sure style has loaded before any data is added
       Promise.all(
-        ["marker-circle", "marker-drop"].map((markerName) => {
+        ["marker-circle", "marker-drop", "marker-bag"].map((markerName) => {
           const img = new Image(100, 115);
           img.src = `/${markerName}.png`;
           return new Promise((resolve) => {
@@ -151,20 +138,17 @@ export default function BaseMap() {
   useEffect(() => {
     if (!map.current) return;
     if (!isMapLoaded) return;
-    if (!entries) return;
     if (!places) return;
+    if (!entries) return;
     if (!products) return;
 
-    map.current.addSource("places", {
-      type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: Array.from(places.values()),
-      },
-    });
+    addPlacesSource(map, "circle", places, entries);
+    addPlacesSource(map, "drop", places, null);
+    addPlacesSource(map, "bag", places, null);
+
     map.current.addLayer({
-      id: "places-markers",
-      source: "places",
+      id: "circle-markers",
+      source: "circle",
       type: "symbol",
       layout: {
         ...getMarkerLayout("marker-circle"),
@@ -214,38 +198,9 @@ export default function BaseMap() {
         "text-halo-color": "#ffffff",
       },
     });
-
-    makeHoverable(map, "places", "places-markers", setHoveredPoint);
-    makeClickable(map, "places", "places-markers", setActivePlace, places);
-
-    return () => {
-      if (!map.current) return;
-      if (map.current.getLayer("places-markers")) {
-        map.current.removeLayer("places-markers");
-      }
-      if (map.current.getSource("places")) {
-        map.current.removeSource("places");
-      }
-    };
-  }, [map.current, isMapLoaded, entries, places, products]);
-
-  useEffect(() => {
-    if (!map.current) return;
-    if (!isMapLoaded) return;
-    if (!pois) return;
-
-    map.current.addSource("drinking-fountains", {
-      type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: Array.from(pois.values()).filter(
-          ({ properties: { placeType } }) => placeType === "drinking-fountain",
-        ),
-      },
-    });
     map.current.addLayer({
-      id: "drinking-fountains-markers",
-      source: "drinking-fountains",
+      id: "drop-markers",
+      source: "drop",
       type: "symbol",
       layout: getMarkerLayout("marker-drop"),
       paint: {
@@ -262,31 +217,73 @@ export default function BaseMap() {
         ],
       },
     });
+    map.current.addLayer({
+      id: "bag-markers",
+      source: "bag",
+      type: "symbol",
+      layout: getMarkerLayout("marker-bag"),
+      paint: {
+        ...getMarkerPaint(),
+        "icon-color": [
+          "case",
+          [
+            "any",
+            ["to-boolean", ["feature-state", "hover"]],
+            ["to-boolean", ["feature-state", "selected"]],
+          ],
+          markerColors.get("marker-active")!,
+          "#9d6cc7",
+        ],
+      },
+    });
 
-    makeHoverable(map, "drinking-fountains", "drinking-fountains-markers", setHoveredPoint);
-    makeClickable(map, "drinking-fountains", "drinking-fountains-markers", setActivePlace, pois);
+    const sources = ["circle", "drop", "bag"];
+    for (const source of sources) {
+      makeHoverable(map, source, `${source}-markers`, setHoveredPlace);
+      makeClickable(map, source, `${source}-markers`, setActivePlace);
+    }
+
+    setActivePlace(getLocationState());
 
     return () => {
       if (!map.current) return;
-      if (map.current.getLayer("drinking-fountains-markers")) {
-        map.current.removeLayer("drinking-fountains-markers");
-      }
-      if (map.current.getSource("drinking-fountains")) {
-        map.current.removeSource("drinking-fountains");
+      for (const source of sources) {
+        if (map.current.getLayer(`${source}-markers`)) {
+          map.current.removeLayer(`${source}-markers`);
+        }
+        if (map.current.getSource(source)) {
+          map.current.removeSource(source);
+        }
       }
     };
-  }, [map.current, isMapLoaded, pois]);
+  }, [map.current, isMapLoaded, places, entries, products]);
+
+  if (!(places && entries && products)) {
+    return (
+      <div className="map">
+        <div className="map-container" ref={mapContainer} />
+      </div>
+    );
+  }
 
   return (
     <div className="map">
       <div className="map-container" ref={mapContainer} />
-      {activePlace && entries && products && (
+      {activePlace ? (
         <InfoPanel
-          activePlace={activePlace}
+          activePlace={places.get(activePlace.id)!}
           activeEntries={entries.get(activePlace.id)}
           products={products}
           unsetActivePlace={() => setActivePlace(undefined)}
         />
+      ) : showSearchBar ? (
+        <SearchBar
+          places={places}
+          setActivePlace={setActivePlace}
+          setShowSearchBar={setShowSearchBar}
+        />
+      ) : (
+        <SearchButton onClick={() => setShowSearchBar(true)} />
       )}
     </div>
   );

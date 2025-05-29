@@ -1,27 +1,25 @@
 export type Place = {
-  placeName: string;
-  address: string;
-  district: string;
-  picture: boolean;
-  placeType: string;
-  website: string;
-  phone: string;
+  placeId: number;
   lat: number;
   lon: number;
+  placeName: string;
+  placeType: string;
+  address: string;
+  website: string;
+  phone: string;
+  note: string;
   closed: boolean;
-  placeId: number;
 };
 
 export const placeProperties = [
+  "placeId",
   "placeName",
-  "address",
-  "district",
-  "picture",
   "placeType",
+  "address",
   "website",
   "phone",
+  "note",
   "closed",
-  "placeId",
 ] as (keyof Place)[];
 
 type GeoJSONPoint = {
@@ -33,20 +31,20 @@ type GeoJSONPoint = {
   };
 };
 
-export type FeaturePoint = {
+export type PlaceFeature = {
   source: string;
   id: number;
 };
 
-export type PlaceJSON = GeoJSONPoint & {
+export type PlaceGeoJSON = GeoJSONPoint & {
   properties: {
+    placeId: number;
     placeName: string;
-    address: string;
-    district: string;
-    picture: boolean;
     placeType: string;
+    address: string;
     website: string;
     phone: string;
+    note: string;
     closed: boolean;
     priceRating: number | undefined;
   };
@@ -64,22 +62,4 @@ export type Product = {
   brandName: string;
   productName: string;
   productType: string;
-};
-
-export type POI = {
-  lat: number;
-  lon: number;
-  placeName: string;
-  placeType: string;
-  note: string;
-  source: string;
-};
-
-export type POIJSON = GeoJSONPoint & {
-  properties: {
-    placeName: string;
-    placeType: string;
-    note: string;
-    source: string;
-  };
 };

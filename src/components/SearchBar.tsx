@@ -1,0 +1,82 @@
+import { useMemo, useState } from "react";
+import { Place, PlaceFeature } from "../types";
+import { getSource } from "../utils";
+import { CloseButton } from "./Buttons";
+
+function Suggestions({
+  places,
+  setActivePlace,
+}: {
+  places: Place[];
+  setActivePlace: (newPlace: PlaceFeature | undefined) => void;
+}) {
+  return (
+    <div className="suggestions">
+      {places.map((place) => (
+        <a
+          onClick={() => setActivePlace({ source: getSource(place), id: place.placeId })}
+          key={place.placeId}
+        >
+          {place.placeName}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+const normalizeString = (s: string) => {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+export default function SearchBar({
+  places,
+  setActivePlace,
+  setShowSearchBar,
+}: {
+  places: Map<number, Place>;
+  setActivePlace: (newPlace: PlaceFeature | undefined) => void;
+  setShowSearchBar: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState<Place[]>([]);
+
+  const normalizedPlaces = useMemo(
+    () =>
+      Array.from(places.values()).map((place) => ({
+        placeId: place.placeId,
+        placeName: normalizeString(place.placeName),
+      })),
+    [places],
+  );
+
+  const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  };
+
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+
+    const value = normalizeString(e.target.value);
+    if (value.length >= 3) {
+      setSuggestions(
+        normalizedPlaces
+          .filter(({ placeName }) => placeName.includes(value))
+          .slice(0, 10)
+          .map(({ placeId }) => places.get(placeId)!),
+      );
+    }
+  };
+
+  return (
+    <div className="search-bar">
+      <CloseButton onClick={() => setShowSearchBar(false)} />
+      <form method="post" onSubmit={handleOnSubmit}>
+        <input autoFocus placeholder="Suchen..." value={searchTerm} onChange={handleOnChange} />
+        <Suggestions places={suggestions} setActivePlace={setActivePlace} />
+      </form>
+    </div>
+  );
+}
