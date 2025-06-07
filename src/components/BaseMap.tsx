@@ -1,15 +1,14 @@
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useEffect, useRef, useState } from "react";
-import { markerColors } from "../const";
+import { useEffect, useReducer, useRef, useState } from "react";
+import { MARKER_COLORS, SOURCES } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
-import { Entry, Place, PlaceFeature, Product } from "../types";
+import { Entry, LayerVisibility, Place, PlaceFeature, Product, VisibilityAction } from "../types";
 import { getLocationState } from "../utils";
-import { SearchButton } from "./Buttons";
+import ControlBar from "./ControlBar";
 import InfoPanel from "./InfoPanel";
-import SearchBar from "./SearchBar";
 
 export default function BaseMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -22,10 +21,44 @@ export default function BaseMap() {
   const [products, setProducts] = useState<Map<number, Product> | null>(null);
 
   const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
-  const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
 
   const [hoveredPlace, setHoveredPlace] = useState<PlaceFeature | null>(null);
   const [activePlace, setActivePlace_] = useState<PlaceFeature | undefined>(undefined);
+
+  const defaultVisibility = { circle: true, drop: true, bag: true };
+  const visibilityReducer = (state: LayerVisibility, action: VisibilityAction) => {
+    if (!map.current) return state;
+    map.current.setLayoutProperty(
+      `${action.source}-markers`,
+      "visibility",
+      action.visible ? "visible" : "none",
+    );
+    return { ...state, [action.source]: action.visible };
+  };
+  const [layerVisibility, dispatchVisibility] = useReducer(visibilityReducer, defaultVisibility);
+
+  const setActivePlace = (newPlace: PlaceFeature | undefined) => {
+    setActivePlace_((activePlace) => {
+      if (!map.current) return newPlace;
+
+      if (activePlace) {
+        map.current.setFeatureState(activePlace, { selected: false });
+        if (!newPlace) history.replaceState(null, "", "/");
+      }
+      if (newPlace && places?.has(newPlace.id)) {
+        const place = places.get(newPlace.id)!;
+        map.current.setFeatureState(newPlace, { selected: true });
+        history.replaceState(null, "", `/place/${newPlace.id}`);
+        dispatchVisibility({ source: newPlace.source, visible: true });
+        map.current.flyTo({
+          center: [place.lon, place.lat],
+          zoom: Math.max(map.current.getZoom(), 15),
+          easing: (t) => 1 - Math.pow(1 - t, 5),
+        });
+      }
+      return newPlace;
+    });
+  };
 
   useEffect(() => {
     if (!map.current) return;
@@ -37,33 +70,6 @@ export default function BaseMap() {
       };
     }
   }, [map.current, hoveredPlace]);
-
-  const setActivePlace = (newPlace: PlaceFeature | undefined) => {
-    setActivePlace_((activePlace) => {
-      if (!map.current) return newPlace;
-
-      if (activePlace) {
-        map.current.setFeatureState(activePlace, { selected: false });
-        if (!newPlace) history.replaceState(null, "", " ");
-      }
-      if (newPlace) {
-        map.current.setFeatureState(newPlace, { selected: true });
-        history.replaceState(null, "", `/${newPlace.source}/${newPlace.id}`);
-
-        if (places) {
-          const place = places.get(newPlace.id);
-          if (place) {
-            map.current.flyTo({
-              center: [place.lon, place.lat],
-              zoom: Math.max(map.current.getZoom(), 16),
-              easing: (t) => 1 - Math.pow(1 - t, 5),
-            });
-          }
-        }
-      }
-      return newPlace;
-    });
-  };
 
   useEffect(() => {
     (async () => {
@@ -170,28 +176,28 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          markerColors.get("marker-active")!,
+          MARKER_COLORS.get("marker-active")!,
           ["!", ["to-boolean", ["get", "priceRating"]]],
-          markerColors.get("marker-grey")!,
+          MARKER_COLORS.get("marker-grey")!,
           ["<", ["get", "priceRating"], 0.3],
-          markerColors.get("marker-0")!,
+          MARKER_COLORS.get("marker-0")!,
           ["<", ["get", "priceRating"], 0.33],
-          markerColors.get("marker-1")!,
+          MARKER_COLORS.get("marker-1")!,
           ["<", ["get", "priceRating"], 0.36],
-          markerColors.get("marker-2")!,
+          MARKER_COLORS.get("marker-2")!,
           ["<", ["get", "priceRating"], 0.39],
-          markerColors.get("marker-3")!,
+          MARKER_COLORS.get("marker-3")!,
           ["<", ["get", "priceRating"], 0.42],
-          markerColors.get("marker-4")!,
+          MARKER_COLORS.get("marker-4")!,
           ["<", ["get", "priceRating"], 0.45],
-          markerColors.get("marker-5")!,
+          MARKER_COLORS.get("marker-5")!,
           ["<", ["get", "priceRating"], 0.48],
-          markerColors.get("marker-6")!,
+          MARKER_COLORS.get("marker-6")!,
           ["<", ["get", "priceRating"], 0.51],
-          markerColors.get("marker-7")!,
+          MARKER_COLORS.get("marker-7")!,
           ["<", ["get", "priceRating"], 0.54],
-          markerColors.get("marker-8")!,
-          markerColors.get("marker-9")!,
+          MARKER_COLORS.get("marker-8")!,
+          MARKER_COLORS.get("marker-9")!,
         ],
         //
         "text-halo-width": 1.5,
@@ -212,7 +218,7 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          markerColors.get("marker-active")!,
+          MARKER_COLORS.get("marker-active")!,
           "#2faad4",
         ],
       },
@@ -231,23 +237,23 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          markerColors.get("marker-active")!,
+          MARKER_COLORS.get("marker-active")!,
           "#9d6cc7",
         ],
       },
     });
 
-    const sources = ["circle", "drop", "bag"];
-    for (const source of sources) {
+    for (const source of SOURCES) {
       makeHoverable(map, source, `${source}-markers`, setHoveredPlace);
       makeClickable(map, source, `${source}-markers`, setActivePlace);
     }
 
-    setActivePlace(getLocationState());
+    // Parse window location
+    setActivePlace(getLocationState(places));
 
     return () => {
       if (!map.current) return;
-      for (const source of sources) {
+      for (const source of SOURCES) {
         if (map.current.getLayer(`${source}-markers`)) {
           map.current.removeLayer(`${source}-markers`);
         }
@@ -276,14 +282,13 @@ export default function BaseMap() {
           products={products}
           unsetActivePlace={() => setActivePlace(undefined)}
         />
-      ) : showSearchBar ? (
-        <SearchBar
-          places={places}
-          setActivePlace={setActivePlace}
-          setShowSearchBar={setShowSearchBar}
-        />
       ) : (
-        <SearchButton onClick={() => setShowSearchBar(true)} />
+        <ControlBar
+          places={places}
+          layerVisibility={layerVisibility}
+          setActivePlace={setActivePlace}
+          dispatchVisibility={dispatchVisibility}
+        />
       )}
     </div>
   );

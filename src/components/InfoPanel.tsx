@@ -1,6 +1,6 @@
+import { PRODUCT_TYPES } from "../const";
 import { Entry, Place, Product } from "../types";
-import { getSource } from "../utils";
-import { formatPhone, formatPrice } from "../utils";
+import { formatPhone, formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
 
 function showOptional(value: string | undefined) {
@@ -33,6 +33,12 @@ function GastroPanel({
   products: Map<number, Product>;
   unsetActivePlace: () => void;
 }) {
+  const entrySorter = (ea: Entry, eb: Entry) => {
+    const pa = products.get(ea.productId)!.productType;
+    const pb = products.get(eb.productId)!.productType;
+    return PRODUCT_TYPES.indexOf(pa) - PRODUCT_TYPES.indexOf(pb);
+  };
+
   return (
     <div className="info-panel">
       <CloseButton onClick={unsetActivePlace} />
@@ -50,14 +56,17 @@ function GastroPanel({
       {activeEntries ? (
         <table>
           <tbody>
-            {activeEntries.map((e, i) => (
-              <tr key={i}>
-                <td>
-                  {products.get(e.productId)!.brandName} {products.get(e.productId)!.productName}
-                </td>
-                <td>{formatPrice(e.price)}</td>
-              </tr>
-            ))}
+            {activeEntries.sort(entrySorter).map((e, i) => {
+              const p = products.get(e.productId)!;
+              return (
+                <tr key={i}>
+                  <td>{p.brandName || p.productName}</td>
+                  <td>{p.brandName ? p.productName : ""}</td>
+                  <td>{formatVolume(e.volume)}</td>
+                  <td>{formatPrice(e.price)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       ) : (
@@ -130,10 +139,10 @@ export default function InfoPanel({
   products: Map<number, Product>;
   unsetActivePlace: () => void;
 }) {
-  if (getSource(activePlace) === "drop") {
+  if (activePlace.source === "drop") {
     return <GenericPanel activePlace={activePlace} unsetActivePlace={unsetActivePlace} />;
   }
-  if (getSource(activePlace) === "bag") {
+  if (activePlace.source === "bag") {
     return <KioskPanel activePlace={activePlace} unsetActivePlace={unsetActivePlace} />;
   }
   return (

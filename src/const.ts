@@ -1,4 +1,6 @@
-export const markerColors = new Map([
+import { Source } from "./types";
+
+export const MARKER_COLORS = new Map([
   ["marker-0", "#17a962"],
   ["marker-1", "#1eb147"],
   ["marker-2", "#26ba2b"],
@@ -12,3 +14,15 @@ export const markerColors = new Map([
   ["marker-grey", "#bbbbbb"],
   ["marker-active", "#19c19e"],
 ]);
+
+export const SOURCES = ["circle", "drop", "bag"] as Source[];
+
+export const PRODUCT_TYPES = [
+  "Helles",
+  "Helles Alkoholfrei",
+  "Weißbier",
+  "Weißbier Alkoholfrei",
+  "Weinschorle",
+  "Aperol",
+  "Spritz",
+];

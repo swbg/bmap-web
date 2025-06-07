@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Place, PlaceFeature } from "../types";
-import { getSource } from "../utils";
-import { CloseButton } from "./Buttons";
+import { CloseButton, SearchButton } from "./Buttons";
 
 function Suggestions({
   places,
@@ -14,7 +13,7 @@ function Suggestions({
     <div className="suggestions">
       {places.map((place) => (
         <a
-          onClick={() => setActivePlace({ source: getSource(place), id: place.placeId })}
+          onClick={() => setActivePlace({ source: place.source, id: place.placeId })}
           key={place.placeId}
         >
           {place.placeName}
@@ -34,12 +33,11 @@ const normalizeString = (s: string) => {
 export default function SearchBar({
   places,
   setActivePlace,
-  setShowSearchBar,
 }: {
   places: Map<number, Place>;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
-  setShowSearchBar: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<Place[]>([]);
 
@@ -70,10 +68,13 @@ export default function SearchBar({
     }
   };
 
+  if (!showSearchBar) {
+    return <SearchButton onClick={() => setShowSearchBar(true)} />;
+  }
   return (
     <div className="search-bar">
-      <CloseButton onClick={() => setShowSearchBar(false)} />
       <form method="post" onSubmit={handleOnSubmit}>
+        <CloseButton onClick={() => setShowSearchBar(false)} />
         <input autoFocus placeholder="Suchen..." value={searchTerm} onChange={handleOnChange} />
         <Suggestions places={suggestions} setActivePlace={setActivePlace} />
       </form>

@@ -1,4 +1,5 @@
 import Close from "../assets/close.svg";
+import Filter from "../assets/filter.svg";
 import Search from "../assets/search.svg";
 
 export function CloseButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
@@ -11,8 +12,16 @@ export function CloseButton({ onClick }: { onClick: React.MouseEventHandler<HTML
 
 export function SearchButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
   return (
-    <div className="search-button" onClick={onClick}>
+    <div className="control-button" onClick={onClick}>
       <img src={Search} />
+    </div>
+  );
+}
+
+export function FilterButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
+  return (
+    <div className="filter-button" onClick={onClick}>
+      <img src={Filter} />
     </div>
   );
 }

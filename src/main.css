@@ -49,23 +49,12 @@ input:focus {
   position: absolute;
   top: 5px;
   left: 5px;
-  min-width: 15%;
+  min-width: 20vw;
   background-color: white;
   padding: 0 10px 10px 10px;
   border-radius: 5px;
   box-shadow: 0 0 3px #555555;
-}
-
-@media (max-aspect-ratio: 1/1) {
-  .info-panel {
-    top: auto;
-    left: 0;
-    bottom: 0;
-    width: 100vw;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-}
+} /* adjusted in @media below */
 
 .info-panel h3 {
   margin-top: 12px;
@@ -90,23 +79,85 @@ input:focus {
   padding-left: 15px;
 }
 
-/* SearchBar */
-
-.search-bar {
+/* ControlBar */
+.control-bar {
   position: absolute;
   top: 5px;
   left: 5px;
-  min-width: 20%;
+  pointer-events: none;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+.control-bar > div {
+  pointer-events: auto;
+}
+
+.control-button {
+  position: relative;
   background-color: white;
 
-  /* padding: 0 10px 10px 10px; */
+  height: 2.6em;
+  width: 2.6em;
+
+  border-radius: 5px;
+  box-shadow: 0 0 3px #555555;
+  cursor: pointer;
+}
+
+.control-button:hover {
+  background-color: #eeeeee;
+}
+
+.control-button img {
+  display: block;
+  position: absolute;
+  top: 0.6em;
+  right: 0.6em; /* half of remaining width */
+
+  width: 1.4em;
+  height: 1.4em;
+}
+
+.legend-button img {
+  top: 0.35em;
+}
+
+.control-button span {
+  display: block;
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  transform: translateX(-50%);
+  font-size: 0.6em;
+}
+
+.grayscale img {
+  filter: none;
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+  -o-filter: grayscale(100%);
+}
+
+/* SearchBar */
+.search-bar {
+  min-width: 20vw;
+  background-color: white;
+
   border-radius: 5px;
   box-shadow: 0 0 3px #555555;
 }
 
+.search-bar form {
+  position: relative;
+}
+
 .search-bar input {
   width: 100%;
-  height: 2.4em;
+  height: 2.6em;
   padding: 5px 10px 5px 10px;
   font: inherit;
 }
@@ -122,16 +173,17 @@ input:focus {
   background-color: var(--color-light-grey);
 }
 
-/* SimpleElements */
+/* Buttons */
 .close-button {
   position: absolute;
   top: 0.1em;
   right: 0.1em;
 
-  height: 2.2em;
-  width: 2.2em;
+  height: 2.4em;
+  width: 2.4em;
 
   border-radius: 100%;
+  cursor: pointer;
 }
 
 .close-button:hover {
@@ -141,36 +193,30 @@ input:focus {
 .close-button img {
   display: block;
   position: absolute;
-  top: 0.45em;
-  right: 0.45em;
+  top: 0.5em;
+  right: 0.5em;
 
-  width: 1.3em;
-  height: 1.3em;
+  width: 1.4em;
+  height: 1.4em;
 }
 
-.search-button {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  background-color: white;
+@media (max-aspect-ratio: 1/1) {
+  .info-panel {
+    top: auto;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 
-  height: 2.4em;
-  width: 2.4em;
-
-  border-radius: 5px;
-  box-shadow: 0 0 3px #555555;
+  .search-bar {
+    min-width: 70vw;
+  }
 }
 
-.search-button:hover {
-  background-color: #eeeeee;
-}
-
-.search-button img {
-  display: block;
-  position: absolute;
-  top: 0.55em;
-  right: 0.55em;
-
-  width: 1.3em;
-  height: 1.3em;
+@media (pointer: coarse) {
+  .control-button:hover {
+    background-color: white;
+  }
 }

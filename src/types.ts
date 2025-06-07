@@ -1,3 +1,7 @@
+import { productTypes } from "./const";
+
+export type Source = "circle" | "drop" | "bag";
+
 export type Place = {
   placeId: number;
   lat: number;
@@ -9,18 +13,8 @@ export type Place = {
   phone: string;
   note: string;
   closed: boolean;
+  source: Source;
 };
-
-export const placeProperties = [
-  "placeId",
-  "placeName",
-  "placeType",
-  "address",
-  "website",
-  "phone",
-  "note",
-  "closed",
-] as (keyof Place)[];
 
 type GeoJSONPoint = {
   type: "Feature";
@@ -32,7 +26,7 @@ type GeoJSONPoint = {
 };
 
 export type PlaceFeature = {
-  source: string;
+  source: Source;
   id: number;
 };
 
@@ -61,5 +55,16 @@ export type Entry = {
 export type Product = {
   brandName: string;
   productName: string;
-  productType: string;
+  productType: (typeof productTypes)[number];
+};
+
+export type LayerVisibility = {
+  circle: boolean;
+  drop: boolean;
+  bag: boolean;
+};
+
+export type VisibilityAction = {
+  source: Source;
+  visible: boolean;
 };
