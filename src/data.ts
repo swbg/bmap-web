@@ -1,5 +1,7 @@
 import Papa from "papaparse";
+import { productTypes } from "./const";
 import { Entry, Place, PlaceGeoJSON, Product } from "./types";
+import { getSource } from "./utils";
 
 export async function fetchData(path: string) {
   try {
@@ -54,14 +56,14 @@ export function parsePlaces(csvString: string) {
       if (["placeId", "lat", "lon"].indexOf(header) >= 0) return Number(v);
       return v;
     },
-  }).data as Place[];
+  }).data as Omit<Place, "source">[];
 
   const places = new Map<number, Place>();
   parsed.forEach((place) => {
     if (places.has(place.placeId)) {
       throw new Error(`Duplicate 'placeId' ${place.placeId}`);
     } else {
-      places.set(place.placeId, place);
+      places.set(place.placeId, { ...place, source: getSource(place) });
     }
   });
   return places;
@@ -74,6 +76,9 @@ export function parseProducts(csvString: string) {
     skipEmptyLines: true,
     transform: (v: string, header: string) => {
       if (header === "productId") return Number(v);
+      if (header === "productType" && productTypes.indexOf(v) < 0) {
+        console.log("Unknown product type", v);
+      }
       return v;
     },
   }).data as T;
