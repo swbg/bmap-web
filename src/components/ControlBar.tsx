@@ -1,66 +1,50 @@
 import React from "react";
-import Bag from "../assets/bag.svg";
-import Drop from "../assets/drop.svg";
-import MarkerCircle from "../assets/marker-circle-flush.svg";
-import { LayerVisibility, Place, PlaceFeature, Source, VisibilityAction } from "../types";
+import {
+  FilterAction,
+  FilterState,
+  Place,
+  PlaceFeature,
+  VisibilityAction,
+  VisibilityState,
+} from "../types";
+import { LegendButton } from "./Buttons";
+import FilterBar from "./FilterBar";
 import SearchBar from "./SearchBar";
-
-function SourceLegend({
-  source,
-  layerVisibility,
-  dispatchVisibility,
-}: {
-  source: Source;
-  layerVisibility: LayerVisibility;
-  dispatchVisibility: React.Dispatch<VisibilityAction>;
-}) {
-  const [image, label] =
-    source === "circle"
-      ? [MarkerCircle, "Bars"]
-      : source === "drop"
-        ? [Drop, "Wasser"]
-        : [Bag, "Kiosks"];
-
-  return (
-    <div
-      className={`control-button legend-button ${layerVisibility[source] ? "" : "grayscale"}`}
-      onClick={() => dispatchVisibility({ source, visible: !layerVisibility[source] })}
-    >
-      <img src={image} />
-      <span>{label}</span>
-    </div>
-  );
-}
 
 export default function ControlBar({
   places,
   layerVisibility,
+  filterState,
   setActivePlace,
   dispatchVisibility,
+  dispatchFilter,
 }: {
   places: Map<number, Place>;
-  layerVisibility: LayerVisibility;
+  layerVisibility: VisibilityState;
+  filterState: FilterState;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
   dispatchVisibility: React.Dispatch<VisibilityAction>;
+  dispatchFilter: React.Dispatch<FilterAction>;
 }) {
   return (
     <div className="control-bar">
       <SearchBar places={places} setActivePlace={setActivePlace} />
-      <SourceLegend
+      <LegendButton
         source={"circle"}
         layerVisibility={layerVisibility}
         dispatchVisibility={dispatchVisibility}
       />
-      <SourceLegend
+      <LegendButton
         source={"drop"}
         layerVisibility={layerVisibility}
         dispatchVisibility={dispatchVisibility}
       />
-      <SourceLegend
+      <LegendButton
         source={"bag"}
         layerVisibility={layerVisibility}
         dispatchVisibility={dispatchVisibility}
       />
+      {/* <FilterBar filterState={filterState} dispatchFilter={dispatchFilter} /> */}
     </div>
   );
 }
