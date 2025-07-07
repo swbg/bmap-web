@@ -205,34 +205,6 @@ export default function BaseMap() {
         "text-halo-color": "#ffffff",
       },
     });
-    // Hover/Selected Layer
-    map.current.addLayer({
-      id: "circle-markers-active",
-      source: "circle",
-      type: "symbol",
-      layout: {
-        ...getMarkerLayout("marker-circle"),
-        "icon-size": 0.95, // 50% größer
-        "text-field": ["get", "placeName"],
-        "text-font": ["Open Sans Regular"],
-        "text-offset": [0, 0],
-        "text-anchor": "top",
-        "text-line-height": 1.05,
-        "text-optional": true,
-      },
-      paint: {
-        ...getMarkerPaint(),
-        "icon-color": MARKER_COLORS.get("marker-active")!,
-        "icon-halo-color": "#79b8e5",
-        "text-halo-width": 1.5,
-        "text-halo-color": "#ffffff",
-      },
-      filter: [
-        "any",
-        ["to-boolean", ["feature-state", "hover"]],
-        ["to-boolean", ["feature-state", "selected"]],
-      ],
-    });
     map.current.addLayer({
       id: "drop-markers",
       source: "drop",
