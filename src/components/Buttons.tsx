@@ -1,5 +1,5 @@
 import Close from "../assets/close.svg";
-import Filter from "../assets/filter.svg";
+import Filter from "../assets/search.svg";
 import Search from "../assets/search.svg";
 
 export function CloseButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
