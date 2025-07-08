@@ -11,7 +11,7 @@ export enum Colors {
   MarkerDrop = "#2faad4", // blautürkis
   MarkerBag = "#9d6cc7", // violett
   Halo = "#ffffff",
-  HaloActive = "#79b8e5", // hellblau
+  HaloActive = "#3c9ee7", // same as MarkerActive
 }
 
 export const SOURCES = ["circle", "drop", "bag"] as Source[];
