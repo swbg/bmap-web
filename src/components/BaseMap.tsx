@@ -1,7 +1,7 @@
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { BRAND_NAMES, MARKER_COLORS, SOURCES } from "../const";
+import { BRAND_NAMES, Colors, SOURCES } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
@@ -192,32 +192,22 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          MARKER_COLORS.get("marker-active")!,
+          Colors.MarkerActive,
           ["!", ["to-boolean", ["get", "priceRating"]]],
-          MARKER_COLORS.get("marker-grey")!,
-          ["<", ["get", "priceRating"], 0.3],
-          MARKER_COLORS.get("marker-0")!,
-          ["<", ["get", "priceRating"], 0.33],
-          MARKER_COLORS.get("marker-1")!,
-          ["<", ["get", "priceRating"], 0.36],
-          MARKER_COLORS.get("marker-2")!,
-          ["<", ["get", "priceRating"], 0.39],
-          MARKER_COLORS.get("marker-3")!,
-          ["<", ["get", "priceRating"], 0.42],
-          MARKER_COLORS.get("marker-4")!,
+          Colors.MarkerGrey,
+          ["<", ["get", "priceRating"], 0.38],
+          Colors.Marker0,
           ["<", ["get", "priceRating"], 0.45],
-          MARKER_COLORS.get("marker-5")!,
+          Colors.Marker1,
           ["<", ["get", "priceRating"], 0.48],
-          MARKER_COLORS.get("marker-6")!,
-          ["<", ["get", "priceRating"], 0.51],
-          MARKER_COLORS.get("marker-7")!,
-          ["<", ["get", "priceRating"], 0.54],
-          MARKER_COLORS.get("marker-8")!,
-          MARKER_COLORS.get("marker-9")!,
+          Colors.Marker2,
+          ["<", ["get", "priceRating"], 0.56],
+          Colors.Marker3,
+          Colors.Marker4,
         ],
         //
         "text-halo-width": 1.5,
-        "text-halo-color": "#ffffff",
+        "text-halo-color": Colors.Halo,
       },
     });
     map.current.addLayer({
@@ -234,8 +224,8 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          MARKER_COLORS.get("marker-active")!,
-          "#2faad4",
+          Colors.MarkerActive,
+          Colors.MarkerDrop,
         ],
       },
     });
@@ -253,8 +243,8 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          MARKER_COLORS.get("marker-active")!,
-          "#9d6cc7",
+          Colors.MarkerActive,
+          Colors.MarkerBag,
         ],
       },
     });

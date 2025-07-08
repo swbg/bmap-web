@@ -1,19 +1,18 @@
 import { Source } from "./types";
 
-export const MARKER_COLORS = new Map([
-  ["marker-0", "#17a962"],
-  ["marker-1", "#1eb147"],
-  ["marker-2", "#26ba2b"],
-  ["marker-3", "#4dc22e"],
-  ["marker-4", "#78cb36"],
-  ["marker-5", "#a4d33e"],
-  ["marker-6", "#d1dc46"],
-  ["marker-7", "#e5cc4e"],
-  ["marker-8", "#edb056"],
-  ["marker-9", "#f6945e"],
-  ["marker-grey", "#bbbbbb"],
-  ["marker-active", "#19c19e"],
-]);
+export enum Colors {
+  Marker0 = "#99d18c", // hellgrün
+  Marker1 = "#5db24a", // mittelgrün
+  Marker2 = "#f2bb43", // gelb
+  Marker3 = "#d87d06", // orange
+  Marker4 = "#c64e11", // dunkelorange
+  MarkerGrey = "#bbbbbb",
+  MarkerActive = "#3c9ee7", // mittelblau
+  MarkerDrop = "#2faad4", // blautürkis
+  MarkerBag = "#9d6cc7", // violett
+  Halo = "#ffffff",
+  HaloActive = "#3c9ee7", // same as MarkerActive
+}
 
 export const SOURCES = ["circle", "drop", "bag"] as Source[];
 
