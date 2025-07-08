@@ -9,16 +9,6 @@ export function formatVolume(volume: number | undefined) {
   return `0,${(volume + "").slice(0, 2)} l`;
 }
 
-export function formatPhone(p: string) {
-  if (p.slice(0, 3) === "089") {
-    return "089 " + p.slice(3);
-  }
-  if (p.slice(0, 2) === "01") {
-    return p.slice(0, 4) + " " + p.slice(4);
-  }
-  return p;
-}
-
 export function getSource(place: Omit<Place, "source">) {
   if (place.placeType === "Trinkbrunnen") return "drop";
   if (place.placeType === "Tankstelle" || place.placeType === "Späti") return "bag";

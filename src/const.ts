@@ -26,3 +26,13 @@ export const PRODUCT_TYPES = [
   "Aperol",
   "Spritz",
 ];
+
+export const BRAND_NAMES = [
+  "Augustiner",
+  "Tegernseer",
+  "Hacker",
+  "Spaten",
+  "Löwenbräu",
+  "Paulaner",
+  "Giesinger",
+];

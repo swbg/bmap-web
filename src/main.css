@@ -12,6 +12,8 @@
 
   --color-highlight: #663333;
   --color-light-grey: #dddddd;
+
+  --border-radius: 15px;
 }
 
 #root {
@@ -26,6 +28,11 @@ body {
 a {
   text-decoration: none;
   color: var(--color-highlight);
+}
+
+.a-phone {
+  text-decoration: underline;
+  color: inherit;
 }
 
 input:focus {
@@ -52,8 +59,9 @@ input:focus {
   min-width: 20vw;
   background-color: white;
   padding: 0 10px 10px 10px;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: 0 0 3px #555555;
+  z-index: 3;
 } /* adjusted in @media below */
 
 .info-panel h3 {
@@ -147,8 +155,10 @@ input:focus {
   min-width: 20vw;
   background-color: white;
 
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: 0 0 3px #555555;
+
+  overflow: hidden;
 }
 
 .search-bar form {
@@ -169,8 +179,22 @@ input:focus {
   padding: 5px 10px 5px 10px;
 }
 
+.suggestions a:first-child {
+  margin-top: 0;
+}
+
 .suggestions a:hover {
   background-color: var(--color-light-grey);
+}
+
+/* FilterBar */
+.filter-bar {
+  background-color: white;
+
+  border-radius: var(--border-radius);
+  box-shadow: 0 0 3px #555555;
+
+  overflow: hidden;
 }
 
 /* Buttons */
