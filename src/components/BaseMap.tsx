@@ -1,7 +1,7 @@
-import maplibregl from "maplibre-gl";
+import maplibregl, { Color } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { MARKER_COLORS, SOURCES } from "../const";
+import { Colors, SOURCES } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
@@ -176,33 +176,22 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          MARKER_COLORS.get("marker-active")!,
+          Colors.MarkerActive,
           ["!", ["to-boolean", ["get", "priceRating"]]],
-          MARKER_COLORS.get("marker-grey")!,
+          Colors.MarkerGrey,
           ["<", ["get", "priceRating"], 0.38],
-          MARKER_COLORS.get("marker-0")!,
+          Colors.Marker0,
           ["<", ["get", "priceRating"], 0.45],
-          MARKER_COLORS.get("marker-1")!,
+          Colors.Marker1,
           ["<", ["get", "priceRating"], 0.48],
-          MARKER_COLORS.get("marker-2")!,
+          Colors.Marker2,
           ["<", ["get", "priceRating"], 0.56],
-          MARKER_COLORS.get("marker-3")!,
-
-          MARKER_COLORS.get("marker-4")!,
-        ],
-        "icon-halo-color": [
-          "case",
-          [
-            "any",
-            ["to-boolean", ["feature-state", "hover"]],
-            ["to-boolean", ["feature-state", "selected"]],
-          ],
-          "#79b8e5",
-          "#ffffff",
+          Colors.Marker3,
+          Colors.Marker4,
         ],
         //
         "text-halo-width": 1.5,
-        "text-halo-color": "#ffffff",
+        "text-halo-color": Colors.Halo,
       },
     });
     map.current.addLayer({
@@ -219,8 +208,8 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          MARKER_COLORS.get("marker-active")!,
-          "#2faad4",
+          Colors.MarkerActive,
+          Colors.MarkerDrop,
         ],
       },
     });
@@ -238,8 +227,8 @@ export default function BaseMap() {
             ["to-boolean", ["feature-state", "hover"]],
             ["to-boolean", ["feature-state", "selected"]],
           ],
-          MARKER_COLORS.get("marker-active")!,
-          "#9d6cc7",
+          Colors.MarkerActive,
+          Colors.MarkerBag,
         ],
       },
     });

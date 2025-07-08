@@ -1,4 +1,5 @@
 import { PropertyValueSpecification, SymbolLayerSpecification } from "maplibre-gl";
+import { Colors } from "./const";
 
 export function getMarkerLayout(markerName: string) {
   return {
@@ -32,6 +33,15 @@ export function getMarkerPaint() {
       19,
       1.0,
     ],
-    "icon-halo-color": "#ffffff",
+    "icon-halo-color": [
+      "case",
+      [
+        "any",
+        ["to-boolean", ["feature-state", "hover"]],
+        ["to-boolean", ["feature-state", "selected"]],
+      ],
+      Colors.HaloActive,
+      Colors.Halo,
+    ],
   } as SymbolLayerSpecification["paint"];
 }
