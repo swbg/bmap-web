@@ -12,6 +12,8 @@
 
   --color-highlight: #663333;
   --color-light-grey: #dddddd;
+
+  --border-radius: 15px;
 }
 
 #root {
@@ -26,6 +28,11 @@ body {
 a {
   text-decoration: none;
   color: var(--color-highlight);
+}
+
+.a-phone {
+  text-decoration: underline;
+  color: inherit;
 }
 
 input:focus {
@@ -52,8 +59,9 @@ input:focus {
   min-width: 20vw;
   background-color: white;
   padding: 0 10px 10px 10px;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: 0 0 3px #555555;
+  z-index: 3;
 } /* adjusted in @media below */
 
 .info-panel h3 {
@@ -147,7 +155,7 @@ input:focus {
   min-width: 20vw;
   background-color: white;
 
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: 0 0 3px #555555;
 
   overflow: hidden;
@@ -183,7 +191,7 @@ input:focus {
 .filter-bar {
   background-color: white;
 
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   box-shadow: 0 0 3px #555555;
 
   overflow: hidden;

@@ -130,16 +130,16 @@ export default function BaseMap() {
         showCompass: true,
       }),
     );
-    map.current.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      }),
-    );
+    const geolocate = new maplibregl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    });
+    map.current.addControl(geolocate);
 
     map.current.on("load", () => {
+      // geolocate.trigger();
       // Make sure style has loaded before any data is added
       Promise.all(
         ["marker-circle", "marker-drop", "marker-bag"].map((markerName) => {

@@ -8,16 +8,13 @@ import {
   VisibilityState,
 } from "../types";
 import { LegendButton } from "./Buttons";
-import FilterBar from "./FilterBar";
 import SearchBar from "./SearchBar";
 
 export default function ControlBar({
   places,
   layerVisibility,
-  filterState,
   setActivePlace,
   dispatchVisibility,
-  dispatchFilter,
 }: {
   places: Map<number, Place>;
   layerVisibility: VisibilityState;

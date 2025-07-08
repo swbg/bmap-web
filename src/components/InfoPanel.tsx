@@ -1,6 +1,6 @@
 import { PRODUCT_TYPES } from "../const";
 import { Entry, Place, Product } from "../types";
-import { formatPhone, formatPrice, formatVolume } from "../utils";
+import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
 
 function showOptional(value: string | undefined) {
@@ -19,6 +19,25 @@ function googlifyAddress(address: string | undefined) {
         </a>
       </p>
     )
+  );
+}
+
+function formatPhone(phone: string | undefined) {
+  if (!phone) return "";
+
+  let p;
+  if (phone.slice(0, 3) === "089") {
+    p = "089 " + phone.slice(3);
+  }
+  if (phone.slice(0, 2) === "01") {
+    p = phone.slice(0, 4) + " " + phone.slice(4);
+  }
+  return (
+    <p>
+      <a className="a-phone" href={`tel:${phone}`}>
+        {p}
+      </a>
+    </p>
   );
 }
 
@@ -45,7 +64,7 @@ function GastroPanel({
       <h3>{activePlace.placeName}</h3>
       {showOptional(activePlace.placeType)}
       {googlifyAddress(activePlace.address)}
-      {activePlace.phone && <p>{formatPhone(activePlace.phone)}</p>}
+      {formatPhone(activePlace.phone)}
       {activePlace.website && (
         <p>
           <a target="_blank" href={activePlace.website}>
