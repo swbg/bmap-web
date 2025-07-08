@@ -1,4 +1,4 @@
-import { productTypes } from "./const";
+import { BRAND_NAMES, PRODUCT_TYPES } from "./const";
 
 export type Source = "circle" | "drop" | "bag";
 
@@ -55,10 +55,10 @@ export type Entry = {
 export type Product = {
   brandName: string;
   productName: string;
-  productType: (typeof productTypes)[number];
+  productType: (typeof PRODUCT_TYPES)[number];
 };
 
-export type LayerVisibility = {
+export type VisibilityState = {
   circle: boolean;
   drop: boolean;
   bag: boolean;
@@ -67,4 +67,13 @@ export type LayerVisibility = {
 export type VisibilityAction = {
   source: Source;
   visible: boolean;
+};
+
+export type FilterState = {
+  [key: (typeof BRAND_NAMES)[number]]: boolean;
+};
+
+export type FilterAction = {
+  key: (typeof BRAND_NAMES)[number];
+  active: boolean;
 };

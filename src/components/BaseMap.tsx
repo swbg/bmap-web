@@ -1,11 +1,20 @@
-import maplibregl, { Color } from "maplibre-gl";
+import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { Colors, SOURCES } from "../const";
+import { BRAND_NAMES, Colors, SOURCES } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
-import { Entry, LayerVisibility, Place, PlaceFeature, Product, VisibilityAction } from "../types";
+import {
+  Entry,
+  FilterAction,
+  FilterState,
+  Place,
+  PlaceFeature,
+  Product,
+  VisibilityAction,
+  VisibilityState,
+} from "../types";
 import { getLocationState } from "../utils";
 import ControlBar from "./ControlBar";
 import InfoPanel from "./InfoPanel";
@@ -26,7 +35,7 @@ export default function BaseMap() {
   const [activePlace, setActivePlace_] = useState<PlaceFeature | undefined>(undefined);
 
   const defaultVisibility = { circle: true, drop: true, bag: true };
-  const visibilityReducer = (state: LayerVisibility, action: VisibilityAction) => {
+  const visibilityReducer = (state: VisibilityState, action: VisibilityAction) => {
     if (!map.current) return state;
     map.current.setLayoutProperty(
       `${action.source}-markers`,
@@ -36,6 +45,13 @@ export default function BaseMap() {
     return { ...state, [action.source]: action.visible };
   };
   const [layerVisibility, dispatchVisibility] = useReducer(visibilityReducer, defaultVisibility);
+
+  const defaultFilter = [...BRAND_NAMES, "Andere"].reduce((acc, k) => ({ ...acc, [k]: true }), {});
+  const filterReducer = (state: FilterState, action: FilterAction) => {
+    console.log(state, action);
+    return { ...state, [action.key]: action.active };
+  };
+  const [filterState, dispatchFilter] = useReducer(filterReducer, defaultFilter);
 
   const setActivePlace = (newPlace: PlaceFeature | undefined) => {
     setActivePlace_((activePlace) => {
@@ -114,16 +130,16 @@ export default function BaseMap() {
         showCompass: true,
       }),
     );
-    map.current.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      }),
-    );
+    const geolocate = new maplibregl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    });
+    map.current.addControl(geolocate);
 
     map.current.on("load", () => {
+      // geolocate.trigger();
       // Make sure style has loaded before any data is added
       Promise.all(
         ["marker-circle", "marker-drop", "marker-bag"].map((markerName) => {
@@ -276,8 +292,10 @@ export default function BaseMap() {
         <ControlBar
           places={places}
           layerVisibility={layerVisibility}
+          filterState={filterState}
           setActivePlace={setActivePlace}
           dispatchVisibility={dispatchVisibility}
+          dispatchFilter={dispatchFilter}
         />
       )}
     </div>
