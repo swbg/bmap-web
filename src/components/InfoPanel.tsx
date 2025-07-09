@@ -7,8 +7,10 @@ import { Entry, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
 
-function showOptional(value: string | undefined) {
-  return value && <p>{value}</p>;
+function formatPlaceType(placeType: string | undefined) {
+  if (!placeType) return "";
+
+  return <p className="info-subtitle">{placeType}</p>;
 }
 
 function googlifyAddress(address: string | undefined) {
@@ -61,20 +63,61 @@ function formatHours(hours: string | undefined) {
   if (!hours) return "";
 
   const breakify = (s: string) => {
-    const l = s.split("Uhr ");
-    return l.reduce<JSX.Element[]>((acc, e, i) => {
-      if (i < l.length - 1) {
-        return [...acc, <span key={2 * i}>{e + "Uhr"}</span>, <br key={2 * i + 1} />];
-      } else {
-        return [...acc, <span key={2 * i}>{e}</span>];
-      }
-    }, []);
+    const l = s.trim().split("Uhr ");
+    if (l.length == 1) {
+      return <span>{l[0]}</span>;
+    }
+    return (
+      <table>
+        <tbody>
+          {l.map((e, i) => {
+            const [day, hours] = e.split(": ");
+            return (
+              <tr key={i}>
+                <td>{day}</td>
+                <td>{i < l.length - 1 ? hours + "Uhr" : hours}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
   };
 
   return (
     <p className="info-element">
       <img src={Clock} />
       <div>{breakify(hours)}</div>
+    </p>
+  );
+}
+
+function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
+  if (!activeEntries) return <p>Noch keine Preise verfügbar.</p>;
+
+  const entrySorter = (ea: Entry, eb: Entry) => {
+    const pa = products.get(ea.productId)!.productType;
+    const pb = products.get(eb.productId)!.productType;
+    return PRODUCT_TYPES.indexOf(pa) - PRODUCT_TYPES.indexOf(pb);
+  };
+
+  return (
+    <p>
+      <table>
+        <tbody>
+          {activeEntries.sort(entrySorter).map((e, i) => {
+            const p = products.get(e.productId)!;
+            return (
+              <tr key={i}>
+                <td>{p.brandName || p.productName}</td>
+                <td>{p.brandName ? p.productName : ""}</td>
+                <td>{formatVolume(e.volume)}</td>
+                <td>{formatPrice(e.price)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </p>
   );
 }
@@ -90,39 +133,16 @@ function GastroPanel({
   products: Map<number, Product>;
   unsetActivePlace: () => void;
 }) {
-  const entrySorter = (ea: Entry, eb: Entry) => {
-    const pa = products.get(ea.productId)!.productType;
-    const pb = products.get(eb.productId)!.productType;
-    return PRODUCT_TYPES.indexOf(pa) - PRODUCT_TYPES.indexOf(pb);
-  };
-
   return (
     <div className="info-panel">
       <CloseButton onClick={unsetActivePlace} />
       <h3>{activePlace.placeName}</h3>
-      {showOptional(activePlace.placeType)}
+      {formatPlaceType(activePlace.placeType)}
+      <div className="info-divider" />
       {googlifyAddress(activePlace.address)}
       {formatPhone(activePlace.phone)}
       {formatWebsite(activePlace.website)}
-      {activeEntries ? (
-        <table>
-          <tbody>
-            {activeEntries.sort(entrySorter).map((e, i) => {
-              const p = products.get(e.productId)!;
-              return (
-                <tr key={i}>
-                  <td>{p.brandName || p.productName}</td>
-                  <td>{p.brandName ? p.productName : ""}</td>
-                  <td>{formatVolume(e.volume)}</td>
-                  <td>{formatPrice(e.price)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      ) : (
-        <p>Noch keine Preise verfügbar.</p>
-      )}
+      {formatEntries(activeEntries, products)}
     </div>
   );
 }
@@ -138,7 +158,8 @@ function KioskPanel({
     <div className="info-panel">
       <CloseButton onClick={unsetActivePlace} />
       <h3>{activePlace.placeName}</h3>
-      {showOptional(activePlace.placeType)}
+      {formatPlaceType(activePlace.placeType)}
+      <div className="info-divider" />
       {googlifyAddress(activePlace.address)}
       {formatHours(activePlace.note)}
     </div>
@@ -162,7 +183,8 @@ function GenericPanel({
     <div className="info-panel">
       <CloseButton onClick={unsetActivePlace} />
       <h3>{activePlace.placeName}</h3>
-      <p>{activePlace.note}</p>
+      <div className="info-divider" />
+      {activePlace.note && <p>{activePlace.note}</p>}
       <p>{source}</p>
     </div>
   );
