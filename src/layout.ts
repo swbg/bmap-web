@@ -33,15 +33,6 @@ export function getMarkerPaint() {
       19,
       1.0,
     ],
-    "icon-halo-color": [
-      "case",
-      [
-        "any",
-        ["to-boolean", ["feature-state", "hover"]],
-        ["to-boolean", ["feature-state", "selected"]],
-      ],
-      Colors.HaloActive,
-      Colors.Halo,
-    ],
+    "icon-halo-color": Colors.Halo,
   } as SymbolLayerSpecification["paint"];
 }

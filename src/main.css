@@ -3,14 +3,15 @@
 }
 
 :root {
-  font-family: "Open Sans", sans-serif;
+  font-family: "Arial", sans-serif;
+  color: #111111;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --color-highlight: #663333;
+  --color-highlight: #0b4f7f;
   --color-light-grey: #dddddd;
 
   --border-radius: 15px;
@@ -65,38 +66,50 @@ input:focus {
 } /* adjusted in @media below */
 
 .info-panel h3 {
-  margin-top: 12px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid black;
-  margin-bottom: 8px;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
 }
 
 .info-panel p {
-  margin: 8px 0;
+  margin: 0.8rem 0;
+}
+
+p.info-subtitle {
+  margin-top: 0.4rem;
+}
+
+.info-panel p:last-child {
+  margin-bottom: 0.4rem;
 }
 
 .info-panel table {
   border-collapse: collapse;
 }
 
+.info-panel td {
+  padding: 0 0 0.2rem 1rem;
+  padding-left: 1rem;
+}
+
 .info-panel td:first-child {
   padding-left: 0;
 }
 
-.info-panel td {
-  padding-left: 15px;
+.info-divider {
+  border-bottom: 1px solid #555555;
+  width: 100%;
+  margin-bottom: 1rem;
 }
 
 .info-element {
   display: flex;
   flex-direction: row;
   align-items: top;
-  gap: 0.8em;
+  gap: 0.8rem;
 }
 
 .info-element img {
-  height: 1.2em;
-  transform: translateY(10%);
+  height: 1.2rem;
 }
 
 /* ControlBar */
