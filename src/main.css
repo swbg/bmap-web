@@ -87,6 +87,18 @@ input:focus {
   padding-left: 15px;
 }
 
+.info-element {
+  display: flex;
+  flex-direction: row;
+  align-items: top;
+  gap: 0.8em;
+}
+
+.info-element img {
+  height: 1.2em;
+  transform: translateY(10%);
+}
+
 /* ControlBar */
 .control-bar {
   position: absolute;

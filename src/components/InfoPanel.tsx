@@ -1,3 +1,7 @@
+import Clock from "../assets/clock.svg";
+import Globe from "../assets/globe.svg";
+import Location from "../assets/location.svg";
+import Phone from "../assets/phone.svg";
 import { PRODUCT_TYPES } from "../const";
 import { Entry, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
@@ -8,17 +12,15 @@ function showOptional(value: string | undefined) {
 }
 
 function googlifyAddress(address: string | undefined) {
+  if (!address) return "";
+
   return (
-    address && (
-      <p>
-        <a
-          target="_blank"
-          href={`https://www.google.com/maps/place/${encodeURIComponent(address)}/`}
-        >
-          {address}
-        </a>
-      </p>
-    )
+    <p className="info-element">
+      <img src={Location} />
+      <a target="_blank" href={`https://www.google.com/maps/place/${encodeURIComponent(address)}/`}>
+        {address}
+      </a>
+    </p>
   );
 }
 
@@ -33,10 +35,46 @@ function formatPhone(phone: string | undefined) {
     p = phone.slice(0, 4) + " " + phone.slice(4);
   }
   return (
-    <p>
+    <p className="info-element">
+      <img src={Phone} />
       <a className="a-phone" href={`tel:${phone}`}>
         {p}
       </a>
+    </p>
+  );
+}
+
+function formatWebsite(website: string | undefined) {
+  if (!website) return "";
+
+  return (
+    <p className="info-element">
+      <img src={Globe} />
+      <a target="_blank" href={website}>
+        {website}
+      </a>
+    </p>
+  );
+}
+
+function formatHours(hours: string | undefined) {
+  if (!hours) return "";
+
+  const breakify = (s: string) => {
+    const l = s.split("Uhr ");
+    return l.reduce<JSX.Element[]>((acc, e, i) => {
+      if (i < l.length - 1) {
+        return [...acc, <span key={2 * i}>{e + "Uhr"}</span>, <br key={2 * i + 1} />];
+      } else {
+        return [...acc, <span key={2 * i}>{e}</span>];
+      }
+    }, []);
+  };
+
+  return (
+    <p className="info-element">
+      <img src={Clock} />
+      <div>{breakify(hours)}</div>
     </p>
   );
 }
@@ -65,13 +103,7 @@ function GastroPanel({
       {showOptional(activePlace.placeType)}
       {googlifyAddress(activePlace.address)}
       {formatPhone(activePlace.phone)}
-      {activePlace.website && (
-        <p>
-          <a target="_blank" href={activePlace.website}>
-            {activePlace.website}
-          </a>
-        </p>
-      )}
+      {formatWebsite(activePlace.website)}
       {activeEntries ? (
         <table>
           <tbody>
@@ -102,24 +134,13 @@ function KioskPanel({
   activePlace: Place;
   unsetActivePlace: () => void;
 }) {
-  const breakify = (s: string) => {
-    const l = s.split("Uhr ");
-    return l.reduce<JSX.Element[]>((acc, e, i) => {
-      if (i < l.length - 1) {
-        return [...acc, <span key={2 * i}>{e + "Uhr"}</span>, <br key={2 * i + 1} />];
-      } else {
-        return [...acc, <span key={2 * i}>{e}</span>];
-      }
-    }, []);
-  };
-
   return (
     <div className="info-panel">
       <CloseButton onClick={unsetActivePlace} />
       <h3>{activePlace.placeName}</h3>
       {showOptional(activePlace.placeType)}
       {googlifyAddress(activePlace.address)}
-      {activePlace.note && <p>{breakify(activePlace.note)}</p>}
+      {formatHours(activePlace.note)}
     </div>
   );
 }
