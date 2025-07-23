@@ -2,7 +2,7 @@ import Clock from "../assets/clock.svg";
 import Globe from "../assets/globe.svg";
 import Location from "../assets/location.svg";
 import Phone from "../assets/phone.svg";
-import { PRODUCT_TYPES } from "../const";
+import { ProductTypes } from "../const";
 import { Entry, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
@@ -98,7 +98,7 @@ function formatEntries(activeEntries: Entry[] | undefined, products: Map<number,
   const entrySorter = (ea: Entry, eb: Entry) => {
     const pa = products.get(ea.productId)!.productType;
     const pb = products.get(eb.productId)!.productType;
-    return PRODUCT_TYPES.indexOf(pa) - PRODUCT_TYPES.indexOf(pb);
+    return ProductTypes.indexOf(pa) - ProductTypes.indexOf(pb);
   };
 
   return (

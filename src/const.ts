@@ -1,8 +1,6 @@
-import { Source } from "./types";
-
 export enum Colors {
-  Marker0 = "#99d18c", // hellgrün
-  Marker1 = "#5db24a", // mittelgrün
+  Marker0 = "#5db24a", // dunkelgrün
+  Marker1 = "#95c96c", // mittelgrün
   Marker2 = "#f2bb43", // gelb
   Marker3 = "#d87d06", // orange
   Marker4 = "#c64e11", // dunkelorange
@@ -13,9 +11,9 @@ export enum Colors {
   Halo = "#ffffff",
 }
 
-export const SOURCES = ["circle", "drop", "bag"] as Source[];
+export const Sources = ["circle", "drop", "bag"] as const;
 
-export const PRODUCT_TYPES = [
+export const ProductTypes = [
   "Helles",
   "Helles Alkoholfrei",
   "Weißbier",
@@ -24,9 +22,9 @@ export const PRODUCT_TYPES = [
   "Aperol",
   "Spritz",
   "Spritz Alkoholfrei",
-];
+] as const;
 
-export const BRAND_NAMES = [
+export const BrandNames = [
   "Augustiner",
   "Tegernseer",
   "Hacker",
@@ -34,4 +32,4 @@ export const BRAND_NAMES = [
   "Löwenbräu",
   "Paulaner",
   "Giesinger",
-];
+] as const;

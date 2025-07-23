@@ -1,46 +1,25 @@
 import React from "react";
-import {
-  FilterAction,
-  FilterState,
-  Place,
-  PlaceFeature,
-  VisibilityAction,
-  VisibilityState,
-} from "../types";
+import { FilterAction, FilterState, Place, PlaceFeature } from "../types";
 import { LegendButton } from "./Buttons";
 import SearchBar from "./SearchBar";
 
 export default function ControlBar({
   places,
-  layerVisibility,
+  filterState,
   setActivePlace,
-  dispatchVisibility,
+  dispatchFilter,
 }: {
   places: Map<number, Place>;
-  layerVisibility: VisibilityState;
   filterState: FilterState;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
-  dispatchVisibility: React.Dispatch<VisibilityAction>;
   dispatchFilter: React.Dispatch<FilterAction>;
 }) {
   return (
     <div className="control-bar">
       <SearchBar places={places} setActivePlace={setActivePlace} />
-      <LegendButton
-        source={"circle"}
-        layerVisibility={layerVisibility}
-        dispatchVisibility={dispatchVisibility}
-      />
-      <LegendButton
-        source={"drop"}
-        layerVisibility={layerVisibility}
-        dispatchVisibility={dispatchVisibility}
-      />
-      <LegendButton
-        source={"bag"}
-        layerVisibility={layerVisibility}
-        dispatchVisibility={dispatchVisibility}
-      />
+      <LegendButton source={"circle"} filterState={filterState} dispatchFilter={dispatchFilter} />
+      <LegendButton source={"drop"} filterState={filterState} dispatchFilter={dispatchFilter} />
+      <LegendButton source={"bag"} filterState={filterState} dispatchFilter={dispatchFilter} />
       {/* <FilterBar filterState={filterState} dispatchFilter={dispatchFilter} /> */}
     </div>
   );

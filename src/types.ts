@@ -1,6 +1,7 @@
-import { BRAND_NAMES, PRODUCT_TYPES } from "./const";
+import { BrandNames, ProductTypes, Sources } from "./const";
 
-export type Source = "circle" | "drop" | "bag";
+export type Source = (typeof Sources)[number];
+export type ProductType = (typeof ProductTypes)[number];
 
 export type Place = {
   placeId: number;
@@ -55,25 +56,16 @@ export type Entry = {
 export type Product = {
   brandName: string;
   productName: string;
-  productType: (typeof PRODUCT_TYPES)[number];
-};
-
-export type VisibilityState = {
-  circle: boolean;
-  drop: boolean;
-  bag: boolean;
-};
-
-export type VisibilityAction = {
-  source: Source;
-  visible: boolean;
+  productType: (typeof ProductTypes)[number];
 };
 
 export type FilterState = {
-  [key: (typeof BRAND_NAMES)[number]]: boolean;
+  source: { [key in (typeof Sources)[number]]: boolean };
+  brandName: { [key in (typeof BrandNames)[number]]: boolean };
 };
 
 export type FilterAction = {
-  key: (typeof BRAND_NAMES)[number];
-  active: boolean;
+  group: keyof FilterState;
+  key: (typeof BrandNames)[number] | (typeof Sources)[number];
+  visible: boolean;
 };

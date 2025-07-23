@@ -1,20 +1,11 @@
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { BRAND_NAMES, Colors, SOURCES } from "../const";
+import { BrandNames, Colors, Sources } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
-import {
-  Entry,
-  FilterAction,
-  FilterState,
-  Place,
-  PlaceFeature,
-  Product,
-  VisibilityAction,
-  VisibilityState,
-} from "../types";
+import { Entry, FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
 import { getLocationState } from "../utils";
 import ControlBar from "./ControlBar";
 import InfoPanel from "./InfoPanel";
@@ -34,22 +25,21 @@ export default function BaseMap() {
   const [hoveredPlace, setHoveredPlace] = useState<PlaceFeature | null>(null);
   const [activePlace, setActivePlace_] = useState<PlaceFeature | undefined>(undefined);
 
-  const defaultVisibility = { circle: true, drop: true, bag: true };
-  const visibilityReducer = (state: VisibilityState, action: VisibilityAction) => {
-    if (!map.current) return state;
-    map.current.setLayoutProperty(
-      `${action.source}-markers`,
-      "visibility",
-      action.visible ? "visible" : "none",
-    );
-    return { ...state, [action.source]: action.visible };
-  };
-  const [layerVisibility, dispatchVisibility] = useReducer(visibilityReducer, defaultVisibility);
-
-  const defaultFilter = [...BRAND_NAMES, "Andere"].reduce((acc, k) => ({ ...acc, [k]: true }), {});
+  const defaultFilter = {
+    source: Sources.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+    brandName: BrandNames.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+  } as FilterState;
   const filterReducer = (state: FilterState, action: FilterAction) => {
-    console.log(state, action);
-    return { ...state, [action.key]: action.active };
+    if (!map.current) return state;
+    if (action.group == "source") {
+      map.current.setLayoutProperty(
+        `${action.key}-markers`,
+        "visibility",
+        action.visible ? "visible" : "none",
+      );
+      return { ...state, [action.group]: { ...state[action.group], [action.key]: action.visible } };
+    }
+    return state;
   };
   const [filterState, dispatchFilter] = useReducer(filterReducer, defaultFilter);
 
@@ -65,7 +55,7 @@ export default function BaseMap() {
         const place = places.get(newPlace.id)!;
         map.current.setFeatureState(newPlace, { selected: true });
         history.replaceState(null, "", `/place/${newPlace.id}`);
-        dispatchVisibility({ source: newPlace.source, visible: true });
+        dispatchFilter({ group: "source", key: newPlace.source, visible: true });
         map.current.flyTo({
           center: [place.lon, place.lat],
           zoom: Math.max(map.current.getZoom(), 15),
@@ -249,7 +239,7 @@ export default function BaseMap() {
       },
     });
 
-    for (const source of SOURCES) {
+    for (const source of Sources) {
       makeHoverable(map, source, `${source}-markers`, setHoveredPlace);
       makeClickable(map, source, `${source}-markers`, setActivePlace);
     }
@@ -259,7 +249,7 @@ export default function BaseMap() {
 
     return () => {
       if (!map.current) return;
-      for (const source of SOURCES) {
+      for (const source of Sources) {
         if (map.current.getLayer(`${source}-markers`)) {
           map.current.removeLayer(`${source}-markers`);
         }
@@ -291,10 +281,8 @@ export default function BaseMap() {
       ) : (
         <ControlBar
           places={places}
-          layerVisibility={layerVisibility}
           filterState={filterState}
           setActivePlace={setActivePlace}
-          dispatchVisibility={dispatchVisibility}
           dispatchFilter={dispatchFilter}
         />
       )}

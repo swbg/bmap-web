@@ -1,6 +1,6 @@
 import Papa from "papaparse";
-import { PRODUCT_TYPES } from "./const";
-import { Entry, Place, PlaceGeoJSON, Product } from "./types";
+import { ProductTypes } from "./const";
+import { Entry, Place, PlaceGeoJSON, Product, ProductType } from "./types";
 import { getSource } from "./utils";
 
 export async function fetchData(path: string) {
@@ -76,7 +76,7 @@ export function parseProducts(csvString: string) {
     skipEmptyLines: true,
     transform: (v: string, header: string) => {
       if (header === "productId") return Number(v);
-      if (header === "productType" && PRODUCT_TYPES.indexOf(v) < 0) {
+      if (header === "productType" && ProductTypes.indexOf(v as ProductType) < 0) {
         console.log("Unknown product type", v);
       }
       return v;

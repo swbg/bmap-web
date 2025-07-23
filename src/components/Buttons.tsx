@@ -4,7 +4,7 @@ import Drop from "../assets/drop.svg";
 // import Filter from "../assets/filter.svg";
 import MarkerCircle from "../assets/marker-circle-flush.svg";
 import Search from "../assets/search.svg";
-import { Source, VisibilityAction, VisibilityState } from "../types";
+import { FilterAction, FilterState, Source } from "../types";
 
 export function CloseButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
   return (
@@ -24,12 +24,12 @@ export function SearchButton({ onClick }: { onClick: React.MouseEventHandler<HTM
 
 export function LegendButton({
   source,
-  layerVisibility,
-  dispatchVisibility,
+  filterState,
+  dispatchFilter,
 }: {
   source: Source;
-  layerVisibility: VisibilityState;
-  dispatchVisibility: React.Dispatch<VisibilityAction>;
+  filterState: FilterState;
+  dispatchFilter: React.Dispatch<FilterAction>;
 }) {
   const [image, label] =
     source === "circle"
@@ -40,8 +40,10 @@ export function LegendButton({
 
   return (
     <div
-      className={`control-button legend-button ${layerVisibility[source] ? "" : "grayscale"}`}
-      onClick={() => dispatchVisibility({ source, visible: !layerVisibility[source] })}
+      className={`control-button legend-button ${filterState.source[source] ? "" : "grayscale"}`}
+      onClick={() =>
+        dispatchFilter({ group: "source", key: source, visible: !filterState.source[source] })
+      }
     >
       <img src={image} />
       <span>{label}</span>
