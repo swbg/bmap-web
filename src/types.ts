@@ -2,6 +2,17 @@ import { BRAND_NAMES, PRODUCT_TYPES } from "./const";
 
 export type Source = "circle" | "drop" | "bag";
 
+export type Weekday =
+  | "Sonntag"
+  | "Montag"
+  | "Dienstag"
+  | "Mittwoch"
+  | "Donnerstag"
+  | "Freitag"
+  | "Samstag";
+
+export type OpenStatus = "open" | "closed" | "unknown";
+
 export type Place = {
   placeId: number;
   lat: number;

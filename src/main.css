@@ -269,3 +269,21 @@ p.info-subtitle {
     background-color: white;
   }
 }
+
+/* layout closed/opened store */
+.opening-hour-panel {
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 0rem;
+  margin-top: 0.05rem;
+  margin-bottom: 0.4rem;
+}
+
+.opening-hour-panel.open {
+  color: #065f46;
+}
+
+.opening-hour-panel.closed {
+  color: #991b1b;
+}

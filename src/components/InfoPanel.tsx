@@ -2,8 +2,8 @@ import Clock from "../assets/clock.svg";
 import Globe from "../assets/globe.svg";
 import Location from "../assets/location.svg";
 import Phone from "../assets/phone.svg";
-import { PRODUCT_TYPES } from "../const";
-import { Entry, Place, Product } from "../types";
+import { PRODUCT_TYPES, STATUS_CLASSES, STATUS_LABELS, WEEKDAY } from "../const";
+import { Entry, OpenStatus, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
 
@@ -62,6 +62,8 @@ function formatWebsite(website: string | undefined) {
 function formatHours(hours: string | undefined) {
   if (!hours) return "";
 
+  const openingStatus = getOpeningStatus(hours);
+
   const breakify = (s: string) => {
     const l = s.trim().split("Uhr ");
     if (l.length == 1) {
@@ -87,9 +89,46 @@ function formatHours(hours: string | undefined) {
   return (
     <p className="info-element">
       <img src={Clock} />
-      <div>{breakify(hours)}</div>
+      <div>
+        {openingStatus == "unknown" ? (
+          // Fallback if 24/7
+          breakify(hours)
+        ) : (
+          <>
+            <div className={`opening-hour-panel ${STATUS_CLASSES[openingStatus]}`}>
+              {STATUS_LABELS[openingStatus]}
+            </div>
+            <br />
+            {breakify(hours)}
+          </>
+        )}
+      </div>
     </p>
   );
+}
+
+function getOpeningStatus(hours: string): OpenStatus {
+  const now = new Date();
+  const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+  const currentDay = WEEKDAY[berlinNow.getDay()];
+  const currentMinutes = berlinNow.getHours() * 60 + berlinNow.getMinutes();
+
+  const dayRegex = new RegExp(`${currentDay}:\\s*(\\d{1,2}:\\d{2})-(\\d{1,2}:\\d{2})`);
+  const match = hours.match(dayRegex);
+  if (!match) return "unknown";
+
+  const [_, startStr, endStr] = match;
+  const [startMins, endMins] = [startStr, endStr].map((t) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  });
+
+  const isOpen =
+    endMins < startMins
+      ? currentMinutes >= startMins || currentMinutes <= endMins
+      : currentMinutes >= startMins && currentMinutes <= endMins;
+
+  return isOpen ? "open" : "closed";
 }
 
 function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
