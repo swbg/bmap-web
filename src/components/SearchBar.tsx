@@ -32,12 +32,15 @@ const normalizeString = (s: string) => {
 
 export default function SearchBar({
   places,
+  expand,
   setActivePlace,
+  setExpand,
 }: {
   places: Map<number, Place>;
+  expand: boolean;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
+  setExpand: (b: boolean) => void;
 }) {
-  const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<Place[]>([]);
 
@@ -68,12 +71,12 @@ export default function SearchBar({
     }
   };
 
-  if (!showSearchBar) {
-    return <SearchButton onClick={() => setShowSearchBar(true)} />;
+  if (!expand) {
+    return <SearchButton onClick={() => setExpand(true)} />;
   }
   return (
     <div className="search-bar">
-      <CloseButton onClick={() => setShowSearchBar(false)} />
+      <CloseButton onClick={() => setExpand(false)} />
       <form method="post" onSubmit={handleOnSubmit}>
         <input autoFocus placeholder="Suchen..." value={searchTerm} onChange={handleOnChange} />
         <Suggestions places={suggestions} setActivePlace={setActivePlace} />

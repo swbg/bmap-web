@@ -68,19 +68,21 @@ function makeBrandNameFilter(
 
 export default function FilterBar({
   filterState,
+  expand,
   dispatchFilter,
+  setExpand,
 }: {
   filterState: FilterState;
+  expand: boolean;
   dispatchFilter: React.Dispatch<FilterAction>;
+  setExpand: (b: boolean) => void;
 }) {
-  const [showFilterBar, setShowFilterBar] = useState<boolean>(false);
-
-  if (!showFilterBar) {
-    return <FilterButton onClick={() => setShowFilterBar(true)} />;
+  if (!expand) {
+    return <FilterButton onClick={() => setExpand(true)} />;
   }
   return (
     <div className="filter-bar">
-      <CloseButton onClick={() => setShowFilterBar(false)} />
+      <CloseButton onClick={() => setExpand(false)} />
       <h4>Orte</h4>
       {Sources.map((source) => makeSourceFilter(source, filterState, dispatchFilter))}
       <h4>Marken</h4>
