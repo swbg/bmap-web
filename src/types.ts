@@ -11,7 +11,7 @@ export type Weekday =
   | "Freitag"
   | "Samstag";
 
-export type OpenStatus = (typeof OPENING_TIME_STATUS)[keyof typeof OPENING_TIME_STATUS];
+export type OpeningTimeStatus = (typeof OPENING_TIME_STATUS)[keyof typeof OPENING_TIME_STATUS];
 
 export type Place = {
   placeId: number;
