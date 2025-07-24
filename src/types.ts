@@ -14,7 +14,7 @@ export type Place = {
   website: string;
   phone: string;
   note: string;
-  closed: boolean;
+  validUntil: boolean;
   source: Source;
 };
 
@@ -41,20 +41,24 @@ export type PlaceGeoJSON = GeoJSONPoint & {
     website: string;
     phone: string;
     note: string;
-    closed: boolean;
+    validUntil: boolean;
     priceRating: number | undefined;
   };
 };
 
 export type Entry = {
+  // indexed by placeId: number;
+  productId: number;
   price: number;
   volume: number;
   vomFass: boolean;
-  date: string;
-  productId: number;
+  validFrom: string;
+  lastUpdate: string;
+  validUntil: string;
 };
 
 export type Product = {
+  // indexed by productId: number;
   brandName: string;
   productName: string;
   productType: (typeof ProductTypes)[number];
