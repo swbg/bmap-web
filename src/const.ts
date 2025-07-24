@@ -1,6 +1,6 @@
 import { Source } from "./types";
 import { Weekday } from "./types";
-import { OpenStatus } from "./types";
+import { OpeningTimeStatus } from "./types";
 
 export enum Colors {
   Marker0 = "#99d18c", // hellgrün
@@ -26,16 +26,16 @@ export const WEEKDAY = [
   "Samstag",
 ] as Weekday[];
 
-export const STATUS_LABELS: Record<OpenStatus, string> = {
-  open: "Geöffnet",
-  closed: "Geschlossen",
-  unknown: "",
-};
-
-export const STATUS_CLASSES: Record<OpenStatus, string> = {
+export const OPENING_TIME_STATUS = {
   open: "open",
   closed: "closed",
   unknown: "unknown",
+} as const;
+
+export const OPENING_TIME_LABELS: Record<OpeningTimeStatus, string> = {
+  [OPENING_TIME_STATUS.open]: "Geöffnet",
+  [OPENING_TIME_STATUS.closed]: "Geschlossen",
+  [OPENING_TIME_STATUS.unknown]: "",
 };
 
 export const PRODUCT_TYPES = [

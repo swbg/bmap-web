@@ -1,4 +1,4 @@
-import { BRAND_NAMES, PRODUCT_TYPES } from "./const";
+import { BRAND_NAMES, OPENING_TIME_STATUS, PRODUCT_TYPES } from "./const";
 
 export type Source = "circle" | "drop" | "bag";
 
@@ -11,7 +11,7 @@ export type Weekday =
   | "Freitag"
   | "Samstag";
 
-export type OpenStatus = "open" | "closed" | "unknown";
+export type OpenStatus = (typeof OPENING_TIME_STATUS)[keyof typeof OPENING_TIME_STATUS];
 
 export type Place = {
   placeId: number;

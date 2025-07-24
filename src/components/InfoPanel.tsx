@@ -2,8 +2,8 @@ import Clock from "../assets/clock.svg";
 import Globe from "../assets/globe.svg";
 import Location from "../assets/location.svg";
 import Phone from "../assets/phone.svg";
-import { PRODUCT_TYPES, STATUS_CLASSES, STATUS_LABELS, WEEKDAY } from "../const";
-import { Entry, OpenStatus, Place, Product } from "../types";
+import { OPENING_TIME_LABELS, OPENING_TIME_STATUS, PRODUCT_TYPES, WEEKDAY } from "../const";
+import { Entry, OpeningTimeStatus, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
 
@@ -91,12 +91,12 @@ function formatHours(hours: string | undefined) {
       <img src={Clock} />
       <div>
         {openingStatus == "unknown" ? (
-          // Fallback if 24/7
-          breakify(hours)
+          // Fallback if 24/7 open
+          <div className="opening-hour-panel open">{breakify(hours)}</div>
         ) : (
           <>
-            <div className={`opening-hour-panel ${STATUS_CLASSES[openingStatus]}`}>
-              {STATUS_LABELS[openingStatus]}
+            <div className={`opening-hour-panel ${openingStatus}`}>
+              {OPENING_TIME_LABELS[openingStatus]}
             </div>
             <br />
             {breakify(hours)}
@@ -107,7 +107,7 @@ function formatHours(hours: string | undefined) {
   );
 }
 
-function getOpeningStatus(hours: string): OpenStatus {
+function getOpeningStatus(hours: string): OpeningTimeStatus {
   const now = new Date();
   const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
   const currentDay = WEEKDAY[berlinNow.getDay()];
@@ -115,7 +115,7 @@ function getOpeningStatus(hours: string): OpenStatus {
 
   const dayRegex = new RegExp(`${currentDay}:\\s*(\\d{1,2}:\\d{2})-(\\d{1,2}:\\d{2})`);
   const match = hours.match(dayRegex);
-  if (!match) return "unknown";
+  if (!match) return OPENING_TIME_STATUS.unknown;
 
   const [_, startStr, endStr] = match;
   const [startMins, endMins] = [startStr, endStr].map((t) => {
@@ -128,7 +128,7 @@ function getOpeningStatus(hours: string): OpenStatus {
       ? currentMinutes >= startMins || currentMinutes <= endMins
       : currentMinutes >= startMins && currentMinutes <= endMins;
 
-  return isOpen ? "open" : "closed";
+  return isOpen ? OPENING_TIME_STATUS.open : OPENING_TIME_STATUS.closed;
 }
 
 function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
