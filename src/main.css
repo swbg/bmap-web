@@ -12,7 +12,7 @@
   -moz-osx-font-smoothing: grayscale;
 
   --color-highlight: #0b4f7f;
-  --color-light-grey: #dddddd;
+  --color-light-gray: #dddddd;
 
   --border-radius: 15px;
 }
@@ -147,11 +147,11 @@ p.info-subtitle {
 .control-button img {
   display: block;
   position: absolute;
-  top: 0.6em;
-  right: 0.6em; /* half of remaining width */
+  top: 0.5em;
+  right: 0.5em; /* half of remaining width */
 
-  width: 1.4em;
-  height: 1.4em;
+  width: 1.6em;
+  height: 1.6em;
 }
 
 .legend-button img {
@@ -167,7 +167,7 @@ p.info-subtitle {
   font-size: 0.6em;
 }
 
-.grayscale img {
+img.grayscale {
   filter: none;
   -webkit-filter: grayscale(100%);
   -moz-filter: grayscale(100%);
@@ -184,9 +184,6 @@ p.info-subtitle {
   box-shadow: 0 0 3px #555555;
 
   overflow: hidden;
-}
-
-.search-bar form {
   position: relative;
 }
 
@@ -209,17 +206,41 @@ p.info-subtitle {
 }
 
 .suggestions a:hover {
-  background-color: var(--color-light-grey);
+  background-color: var(--color-light-gray);
 }
 
 /* FilterBar */
 .filter-bar {
+  min-width: 15vw;
   background-color: white;
 
   border-radius: var(--border-radius);
   box-shadow: 0 0 3px #555555;
+  padding: 10px;
 
   overflow: hidden;
+  position: relative;
+}
+
+.filter-bar h4 {
+  margin-top: 0.7rem;
+  margin-bottom: 0.3rem;
+}
+
+.filter-bar h4:first-of-type {
+  margin-top: 0.2rem;
+}
+
+.filter-option {
+  height: 2rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.filter-option img {
+  height: 1.4em;
 }
 
 /* Buttons */

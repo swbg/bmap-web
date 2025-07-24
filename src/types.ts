@@ -2,6 +2,7 @@ import { BrandNames, ProductTypes, Sources } from "./const";
 
 export type Source = (typeof Sources)[number];
 export type ProductType = (typeof ProductTypes)[number];
+export type BrandName = (typeof BrandNames)[number];
 
 export type Place = {
   placeId: number;

@@ -32,4 +32,5 @@ export const BrandNames = [
   "Löwenbräu",
   "Paulaner",
   "Giesinger",
+  "Andere",
 ] as const;

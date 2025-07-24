@@ -1,7 +1,7 @@
 import Bag from "../assets/bag.svg";
 import Close from "../assets/close.svg";
 import Drop from "../assets/drop.svg";
-// import Filter from "../assets/filter.svg";
+import Filter from "../assets/filter.svg";
 import MarkerCircle from "../assets/marker-circle-flush.svg";
 import Search from "../assets/search.svg";
 import { FilterAction, FilterState, Source } from "../types";
@@ -51,10 +51,10 @@ export function LegendButton({
   );
 }
 
-// export function FilterButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
-//   return (
-//     <div className="control-button filter-button" onClick={onClick}>
-//       <img src={Filter} />
-//     </div>
-//   );
-// }
+export function FilterButton({ onClick }: { onClick: React.MouseEventHandler<HTMLDivElement> }) {
+  return (
+    <div className="control-button filter-button" onClick={onClick}>
+      <img src={Filter} />
+    </div>
+  );
+}

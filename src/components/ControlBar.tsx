@@ -1,6 +1,6 @@
 import React from "react";
 import { FilterAction, FilterState, Place, PlaceFeature } from "../types";
-import { LegendButton } from "./Buttons";
+import FilterBar from "./FilterBar";
 import SearchBar from "./SearchBar";
 
 export default function ControlBar({
@@ -17,10 +17,7 @@ export default function ControlBar({
   return (
     <div className="control-bar">
       <SearchBar places={places} setActivePlace={setActivePlace} />
-      <LegendButton source={"circle"} filterState={filterState} dispatchFilter={dispatchFilter} />
-      <LegendButton source={"drop"} filterState={filterState} dispatchFilter={dispatchFilter} />
-      <LegendButton source={"bag"} filterState={filterState} dispatchFilter={dispatchFilter} />
-      {/* <FilterBar filterState={filterState} dispatchFilter={dispatchFilter} /> */}
+      <FilterBar filterState={filterState} dispatchFilter={dispatchFilter} />
     </div>
   );
 }

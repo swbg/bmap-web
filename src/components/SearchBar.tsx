@@ -73,8 +73,8 @@ export default function SearchBar({
   }
   return (
     <div className="search-bar">
+      <CloseButton onClick={() => setShowSearchBar(false)} />
       <form method="post" onSubmit={handleOnSubmit}>
-        <CloseButton onClick={() => setShowSearchBar(false)} />
         <input autoFocus placeholder="Suchen..." value={searchTerm} onChange={handleOnChange} />
         <Suggestions places={suggestions} setActivePlace={setActivePlace} />
       </form>
