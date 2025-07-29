@@ -269,3 +269,58 @@ p.info-subtitle {
     background-color: white;
   }
 }
+
+/* PasswordGate.css */
+.passwordContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f2f2f2;
+  font-family: sans-serif;
+}
+
+.passwordCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+  width: 320px;
+  text-align: center;
+  border-top: 6px solid #2faad4fe;
+}
+
+.passwordCard h2 {
+  margin-bottom: 1rem;
+  color: #f2bb43;
+}
+
+.passwordCard input {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 2.2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-size: 0.9rem;
+}
+
+.passwordCard input:focus {
+  border-color: #848484;
+  outline: none;
+}
+
+.passwordCard button {
+  width: 100%;
+  padding: 0.7rem;
+  background: #2faad4fe;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.passwordCard button:hover {
+  background: #179bc6fe;
+}
