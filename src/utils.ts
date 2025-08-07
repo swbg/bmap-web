@@ -23,3 +23,10 @@ export function getLocationState(places: Map<number, Place>): PlaceFeature | und
   if (!place) return undefined;
   return { source: place.source, id: place.placeId };
 }
+
+export function normalizeString(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}

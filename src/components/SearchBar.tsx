@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Place, PlaceFeature } from "../types";
+import { normalizeString } from "../utils";
 import { CloseButton, SearchButton } from "./Buttons";
 
 function Suggestions({
@@ -23,21 +24,17 @@ function Suggestions({
   );
 }
 
-const normalizeString = (s: string) => {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-};
-
 export default function SearchBar({
   places,
+  expand,
   setActivePlace,
+  setExpand,
 }: {
   places: Map<number, Place>;
+  expand: boolean;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
+  setExpand: (b: boolean) => void;
 }) {
-  const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<Place[]>([]);
 
@@ -50,10 +47,6 @@ export default function SearchBar({
     [places],
   );
 
-  const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-  };
-
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
 
@@ -65,19 +58,24 @@ export default function SearchBar({
           .slice(0, 10)
           .map(({ placeId }) => places.get(placeId)!),
       );
+    } else {
+      setSuggestions([]);
     }
   };
 
-  if (!showSearchBar) {
-    return <SearchButton onClick={() => setShowSearchBar(true)} />;
+  if (!expand) {
+    return <SearchButton onClick={() => setExpand(true)} />;
   }
   return (
     <div className="search-bar">
-      <form method="post" onSubmit={handleOnSubmit}>
-        <CloseButton onClick={() => setShowSearchBar(false)} />
-        <input autoFocus placeholder="Suchen..." value={searchTerm} onChange={handleOnChange} />
-        <Suggestions places={suggestions} setActivePlace={setActivePlace} />
-      </form>
+      <CloseButton onClick={() => setExpand(false)} />
+      <input
+        autoFocus
+        placeholder="Einen Ort suchen..."
+        value={searchTerm}
+        onChange={handleOnChange}
+      />
+      <Suggestions places={suggestions} setActivePlace={setActivePlace} />
     </div>
   );
 }

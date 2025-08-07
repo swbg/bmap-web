@@ -1,47 +1,43 @@
-import React from "react";
-import {
-  FilterAction,
-  FilterState,
-  Place,
-  PlaceFeature,
-  VisibilityAction,
-  VisibilityState,
-} from "../types";
-import { LegendButton } from "./Buttons";
+import React, { useState } from "react";
+import { FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
+import FilterPanel from "./FilterPanel";
 import SearchBar from "./SearchBar";
 
 export default function ControlBar({
   places,
-  layerVisibility,
+  products,
+  filterState,
   setActivePlace,
-  dispatchVisibility,
+  dispatchFilter,
 }: {
   places: Map<number, Place>;
-  layerVisibility: VisibilityState;
+  products: Map<number, Product>;
   filterState: FilterState;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
-  dispatchVisibility: React.Dispatch<VisibilityAction>;
   dispatchFilter: React.Dispatch<FilterAction>;
 }) {
+  enum Control {
+    None,
+    Search,
+    Filter,
+  }
+  const [expandControl, setExpandControl] = useState<Control>(Control.None);
+
   return (
     <div className="control-bar">
-      <SearchBar places={places} setActivePlace={setActivePlace} />
-      <LegendButton
-        source={"circle"}
-        layerVisibility={layerVisibility}
-        dispatchVisibility={dispatchVisibility}
+      <SearchBar
+        places={places}
+        expand={expandControl == Control.Search}
+        setActivePlace={setActivePlace}
+        setExpand={(b: boolean) => setExpandControl(b ? Control.Search : Control.None)}
       />
-      <LegendButton
-        source={"drop"}
-        layerVisibility={layerVisibility}
-        dispatchVisibility={dispatchVisibility}
+      <FilterPanel
+        products={products}
+        filterState={filterState}
+        expand={expandControl == Control.Filter}
+        dispatchFilter={dispatchFilter}
+        setExpand={(b: boolean) => setExpandControl(b ? Control.Filter : Control.None)}
       />
-      <LegendButton
-        source={"bag"}
-        layerVisibility={layerVisibility}
-        dispatchVisibility={dispatchVisibility}
-      />
-      {/* <FilterBar filterState={filterState} dispatchFilter={dispatchFilter} /> */}
     </div>
   );
 }
