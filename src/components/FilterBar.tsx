@@ -1,92 +1,105 @@
-import React, { useState } from "react";
-import Bag from "../assets/bag.svg";
-import Drop from "../assets/drop.svg";
-import MarkerCircle from "../assets/marker-circle-flush.svg";
-import { BrandNames, Sources } from "../const";
-import { BrandName, FilterAction, FilterState, Source } from "../types";
-import { CloseButton, FilterButton } from "./Buttons";
+import React, { useMemo, useState } from "react";
+import { FilterAction } from "../types";
+import { normalizeString } from "../utils";
+import { ClosePill } from "./Buttons";
 
-function makeSourceFilter(
-  source: Source,
-  filterState: FilterState,
-  dispatchFilter: React.Dispatch<FilterAction>,
-) {
-  const [image, label] =
-    source === "circle"
-      ? [MarkerCircle, "Bars"]
-      : source === "drop"
-        ? [Drop, "Wasser"]
-        : [Bag, "Kiosks"];
-
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatchFilter({
-      group: "source",
-      key: e.target.id as Source,
-      visible: e.target.checked,
-    });
-  };
-
+function FilterPill({
+  term,
+  removeFilterTerm,
+}: {
+  term: string;
+  removeFilterTerm: (term: string) => void;
+}) {
   return (
-    <div key={source} className="filter-option">
-      <input
-        type="checkbox"
-        id={source}
-        checked={filterState.source[source]}
-        onChange={handleOnChange}
-      />
-      <label htmlFor={source}>{label}</label>
-      <img src={image} className={filterState.source[source] ? "" : "grayscale"} />
+    <div className="filter-pill">
+      {term}
+      <ClosePill onClick={() => removeFilterTerm(term)} />
     </div>
   );
 }
 
-function makeBrandNameFilter(
-  brandName: BrandName,
-  filterState: FilterState,
-  dispatchFilter: React.Dispatch<FilterAction>,
-) {
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatchFilter({
-      group: "brandName",
-      key: e.target.id as BrandName,
-      visible: e.target.checked,
-    });
-  };
-
+function Suggestions({
+  suggestions,
+  addFilterTerm,
+}: {
+  suggestions: string[];
+  addFilterTerm: (term: string) => void;
+}) {
   return (
-    <div key={brandName} className="filter-option">
-      <input
-        type="checkbox"
-        id={brandName}
-        checked={filterState.brandName[brandName]}
-        onChange={handleOnChange}
-      />
-      <label htmlFor={brandName}>{brandName}</label>
+    <div className="suggestions">
+      {suggestions.map((suggestion) => (
+        <a onClick={() => addFilterTerm(suggestion)} key={suggestion}>
+          {suggestion}
+        </a>
+      ))}
     </div>
   );
 }
 
 export default function FilterBar({
-  filterState,
-  expand,
+  options,
+  filterTerms,
   dispatchFilter,
-  setExpand,
 }: {
-  filterState: FilterState;
-  expand: boolean;
+  options: string[];
+  filterTerms: string[];
   dispatchFilter: React.Dispatch<FilterAction>;
-  setExpand: (b: boolean) => void;
 }) {
-  if (!expand) {
-    return <FilterButton onClick={() => setExpand(true)} />;
-  }
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const normalizedTerms = useMemo(
+    () =>
+      options.map((option) => ({
+        displayTerm: option,
+        normalizedTerm: normalizeString(option),
+      })),
+    [options],
+  );
+
+  const addFilterTerm = (term: string) => {
+    dispatchFilter({ group: "brandName", key: term, visible: true });
+    setSearchTerm("");
+    setSuggestions([]);
+  };
+
+  const removeFilterTerm = (term: string) => {
+    dispatchFilter({ group: "brandName", key: term, visible: false });
+  };
+
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+
+    const value = normalizeString(e.target.value);
+    if (value.length >= 1) {
+      setSuggestions(
+        normalizedTerms
+          .filter(({ normalizedTerm }) => normalizedTerm.includes(value))
+          .slice(0, 10)
+          .filter(({ displayTerm }) => !filterTerms.includes(displayTerm))
+          .map(({ displayTerm }) => displayTerm),
+      );
+    } else {
+      setSuggestions([]);
+    }
+  };
+
   return (
     <div className="filter-bar">
-      <CloseButton onClick={() => setExpand(false)} />
-      <h4>Orte</h4>
-      {Sources.map((source) => makeSourceFilter(source, filterState, dispatchFilter))}
-      <h4>Marken</h4>
-      {BrandNames.map((brandName) => makeBrandNameFilter(brandName, filterState, dispatchFilter))}
+      <div className="filter-pills">
+        {filterTerms.map((filterTerm) => (
+          <FilterPill key={filterTerm} term={filterTerm} removeFilterTerm={removeFilterTerm} />
+        ))}
+      </div>
+      <div className="filter-input">
+        <input
+          autoFocus
+          placeholder="Nach Brauereien filtern..."
+          value={searchTerm}
+          onChange={handleOnChange}
+        />
+        <Suggestions suggestions={suggestions} addFilterTerm={addFilterTerm} />
+      </div>
     </div>
   );
 }

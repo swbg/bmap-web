@@ -21,7 +21,7 @@ export function parseEntries(csvString: string) {
     header: true,
     skipEmptyLines: true,
     transform: (v: string, header: string) => {
-      if (["placeId", "productId", "price", "volume"].indexOf(header) >= 0) return Number(v);
+      if (["placeId", "productId", "price", "volume"].includes(header)) return Number(v);
       return v;
     },
   }).data as T;
@@ -38,9 +38,8 @@ export function parseEntries(csvString: string) {
 }
 
 function getPriceRating(entries: Entry[] | undefined) {
-  if (entries === undefined) {
-    return undefined;
-  }
+  if (entries === undefined) return undefined;
+
   const tmp = entries.filter((v) => v.volume > 0).map((v) => (0.5 * v.price) / v.volume);
   if (tmp.length > 0) {
     return tmp.reduce((acc, v) => (v < acc ? v : acc), 1);
@@ -48,12 +47,18 @@ function getPriceRating(entries: Entry[] | undefined) {
   return undefined;
 }
 
+function getBrandNames(entries: Entry[] | undefined, products: Map<number, Product>) {
+  if (entries === undefined) return undefined;
+
+  return [...new Set(entries.map((e) => products.get(e.productId)?.brandName))];
+}
+
 export function parsePlaces(csvString: string) {
   const parsed = Papa.parse(csvString, {
     header: true,
     skipEmptyLines: true,
     transform: (v: string, header: string) => {
-      if (["placeId", "lat", "lon"].indexOf(header) >= 0) return Number(v);
+      if (["placeId", "lat", "lon"].includes(header)) return Number(v);
       return v;
     },
   }).data as Omit<Place, "source">[];
@@ -76,7 +81,7 @@ export function parseProducts(csvString: string) {
     skipEmptyLines: true,
     transform: (v: string, header: string) => {
       if (header === "productId") return Number(v);
-      if (header === "productType" && ProductTypes.indexOf(v as ProductType) < 0) {
+      if (header === "productType" && !ProductTypes.includes(v as ProductType)) {
         console.log("Unknown product type", v);
       }
       return v;
@@ -94,7 +99,11 @@ export function parseProducts(csvString: string) {
   return products;
 }
 
-export function placeToGeoJSON(place: Place, entries: Map<number, Entry[]> | null) {
+export function placeToGeoJSON(
+  place: Place,
+  entries: Map<number, Entry[]> | null,
+  products: Map<number, Product> | null,
+) {
   const { placeId, lat, lon } = place;
   return {
     type: "Feature",
@@ -106,6 +115,7 @@ export function placeToGeoJSON(place: Place, entries: Map<number, Entry[]> | nul
     properties: {
       ...place,
       priceRating: entries ? getPriceRating(entries.get(placeId)) : undefined,
+      brandNames: entries && products ? getBrandNames(entries.get(placeId), products) : [],
     },
   } as PlaceGeoJSON;
 }

@@ -1,8 +1,7 @@
-import { BrandNames, ProductTypes, Sources } from "./const";
+import { ProductTypes, Sources } from "./const";
 
 export type Source = (typeof Sources)[number];
 export type ProductType = (typeof ProductTypes)[number];
-export type BrandName = (typeof BrandNames)[number];
 
 export type Place = {
   placeId: number;
@@ -43,6 +42,7 @@ export type PlaceGeoJSON = GeoJSONPoint & {
     note: string;
     validUntil: boolean;
     priceRating: number | undefined;
+    brandNames: string[];
   };
 };
 
@@ -66,11 +66,11 @@ export type Product = {
 
 export type FilterState = {
   source: { [key in (typeof Sources)[number]]: boolean };
-  brandName: { [key in (typeof BrandNames)[number]]: boolean };
+  brandName: string[];
 };
 
 export type FilterAction = {
   group: keyof FilterState;
-  key: (typeof BrandNames)[number] | (typeof Sources)[number];
+  key: (typeof Sources)[number] | string;
   visible: boolean;
 };

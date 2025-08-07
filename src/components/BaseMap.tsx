@@ -1,7 +1,7 @@
-import maplibregl from "maplibre-gl";
+import maplibregl, { FilterSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { BrandNames, Colors, Sources } from "../const";
+import { Colors, Sources } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
@@ -27,17 +27,38 @@ export default function BaseMap() {
 
   const defaultFilter = {
     source: Sources.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
-    brandName: BrandNames.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+    // brandName: BrandNames.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+    brandName: [] as string[],
   } as FilterState;
   const filterReducer = (state: FilterState, action: FilterAction) => {
     if (!map.current) return state;
     if (action.group == "source") {
+      const newState = {
+        ...state,
+        [action.group]: { ...state[action.group], [action.key]: action.visible },
+      };
       map.current.setLayoutProperty(
         `${action.key}-markers`,
         "visibility",
         action.visible ? "visible" : "none",
       );
-      return { ...state, [action.group]: { ...state[action.group], [action.key]: action.visible } };
+      return newState;
+    }
+    if (action.group == "brandName") {
+      const newList = action.visible
+        ? [...state[action.group], action.key]
+        : state[action.group].filter((key) => key !== action.key);
+      const newState = {
+        ...state,
+        [action.group]: newList,
+      };
+
+      const mapFilter = newList.length
+        ? ["any", ...newList.map((brandName) => ["in", brandName, ["get", "brandNames"]])]
+        : null;
+      map.current.setFilter("circle-markers", mapFilter as FilterSpecification);
+
+      return newState;
     }
     return state;
   };
@@ -154,9 +175,9 @@ export default function BaseMap() {
     if (!entries) return;
     if (!products) return;
 
-    addPlacesSource(map, "circle", places, entries);
-    addPlacesSource(map, "drop", places, null);
-    addPlacesSource(map, "bag", places, null);
+    addPlacesSource(map, "circle", entries, places, products);
+    addPlacesSource(map, "drop", null, places, null);
+    addPlacesSource(map, "bag", null, places, null);
 
     map.current.addLayer({
       id: "circle-markers",
@@ -281,6 +302,7 @@ export default function BaseMap() {
       ) : (
         <ControlBar
           places={places}
+          products={products}
           filterState={filterState}
           setActivePlace={setActivePlace}
           dispatchFilter={dispatchFilter}

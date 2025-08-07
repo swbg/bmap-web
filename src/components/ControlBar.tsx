@@ -1,15 +1,17 @@
 import React, { useState } from "react";
-import { FilterAction, FilterState, Place, PlaceFeature } from "../types";
-import FilterBar from "./FilterBar";
+import { FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
+import FilterPanel from "./FilterPanel";
 import SearchBar from "./SearchBar";
 
 export default function ControlBar({
   places,
+  products,
   filterState,
   setActivePlace,
   dispatchFilter,
 }: {
   places: Map<number, Place>;
+  products: Map<number, Product>;
   filterState: FilterState;
   setActivePlace: (newPlace: PlaceFeature | undefined) => void;
   dispatchFilter: React.Dispatch<FilterAction>;
@@ -29,7 +31,8 @@ export default function ControlBar({
         setActivePlace={setActivePlace}
         setExpand={(b: boolean) => setExpandControl(b ? Control.Search : Control.None)}
       />
-      <FilterBar
+      <FilterPanel
+        products={products}
         filterState={filterState}
         expand={expandControl == Control.Filter}
         dispatchFilter={dispatchFilter}
