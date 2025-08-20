@@ -30,3 +30,21 @@ export function normalizeString(s: string) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 }
+
+function rot13(s: string) {
+  return s.replace(/[a-zA-Z0-9]/g, (c) => {
+    // console.log(c);
+    if (!isNaN(+c)) {
+      return "" + ((5 + +c) % 10);
+    }
+    return String.fromCharCode(c.charCodeAt(0) + (c.toUpperCase() <= "M" ? 13 : -13));
+  });
+}
+
+export function enc(s: string) {
+  return btoa(rot13(s));
+}
+
+export function dec(s: string) {
+  return rot13(atob(s));
+}

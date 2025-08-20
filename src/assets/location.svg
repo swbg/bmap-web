@@ -24,30 +24,27 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="2.1945501"
-     inkscape:cx="67.439791"
-     inkscape:cy="136.47444"
+     inkscape:cx="51.035517"
+     inkscape:cy="128.72798"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
      inkscape:window-x="-8"
      inkscape:window-y="79"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg1" />
+     inkscape:current-layer="svg1"
+     showguides="true" />
   <defs
      id="defs1" />
-  <g
-     id="g1"
-     transform="translate(-0.29341885,-0.06792219)">
-    <path
-       id="path1-5"
-       d="m 44.483977,21.904646 c 0,10.598652 -4.657563,13.097813 -19.190558,24.803735 C 10.738808,34.924666 6.1028607,32.503298 6.1028607,21.904646 6.1028608,11.305993 14.694766,2.7140878 25.293419,2.7140878 c 10.598653,0 19.190558,8.5919052 19.190558,19.1905582 z"
-       style="fill:none;fill-opacity:1;stroke:#555555;stroke-width:5;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
-       clip-path="none"
-       sodipodi:nodetypes="scsss" />
-    <circle
-       style="fill:none;fill-opacity:1;stroke:#555555;stroke-width:5;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-       id="path5"
-       cx="25.293419"
-       cy="21.705046"
-       r="8.0642061" />
-  </g>
+  <path
+     id="path1-5"
+     d="M 44.8167,21.816521 C 44.8167,30.629592 40.220301,36.151447 25,47.429304 9.8852556,36.198994 5.1832999,30.714843 5.1832999,21.816521 5.1832999,10.872161 14.055538,2.0000048 25,2.0000048 c 10.944461,0 19.8167,8.8721562 19.8167,19.8165162 z"
+     style="fill:none;fill-opacity:1;stroke:#555555;stroke-width:4;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     clip-path="none"
+     sodipodi:nodetypes="scsss" />
+  <circle
+     style="fill:none;fill-opacity:1;stroke:#555555;stroke-width:4;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+     id="path5"
+     cx="25"
+     cy="21.758894"
+     r="8.0642061" />
 </svg>

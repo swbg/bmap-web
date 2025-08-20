@@ -1,20 +1,19 @@
 import maplibregl, { FilterSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { Colors, Sources } from "../const";
+import { Colors, Sources, defaultCenter, defaultZoom } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
 import { Entry, FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
 import { getLocationState } from "../utils";
+import { dec } from "../utils";
 import ControlBar from "./ControlBar";
 import InfoPanel from "./InfoPanel";
 
 export default function BaseMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const center = [11.575892981950567, 48.137836512295905] as [number, number]; // lon, lat
-  const zoom = 14;
 
   const [places, setPlaces] = useState<Map<number, Place> | null>(null);
   const [entries, setEntries] = useState<Map<number, Entry[]> | null>(null);
@@ -101,23 +100,22 @@ export default function BaseMap() {
   useEffect(() => {
     (async () => {
       // Fetch entries
-      const csvString = await fetchData("/entries.csv");
+      const csvString = await fetchData("/entries.txt");
       if (!csvString) return;
-      setEntries(parseEntries(csvString));
+      // console.log(enc(csvString));
+      setEntries(parseEntries(dec(csvString)));
     })();
     (async () => {
       // Fetch products
-      const csvString = await fetchData("/products.csv");
+      const csvString = await fetchData("/products.txt");
       if (!csvString) return;
-      setProducts(parseProducts(csvString));
+      setProducts(parseProducts(dec(csvString)));
     })();
     (async () => {
       // Fetch places
-      const csvString = await fetchData("/places.csv");
+      const csvString = await fetchData("/places.txt");
       if (!csvString) return;
-
-      const places = parsePlaces(csvString);
-      setPlaces(places);
+      setPlaces(parsePlaces(dec(csvString)));
       // console.log("setPlaces", places);
     })();
   }, []);
@@ -129,16 +127,19 @@ export default function BaseMap() {
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: "/osm_clean.json",
-      center: center,
-      zoom: zoom,
-      minZoom: 12,
+      center: defaultCenter,
+      zoom: defaultZoom,
+      minZoom: 10,
       maxZoom: 19,
+      pitchWithRotate: false,
+      dragRotate: false,
+      touchZoomRotate: true,
     });
     map.current.addControl(
       new maplibregl.NavigationControl({
-        visualizePitch: true,
+        visualizePitch: false,
         showZoom: true,
-        showCompass: true,
+        showCompass: false,
       }),
     );
     const geolocate = new maplibregl.GeolocateControl({
@@ -148,9 +149,11 @@ export default function BaseMap() {
       trackUserLocation: true,
     });
     map.current.addControl(geolocate);
+    map.current.dragRotate.disable();
+    map.current.touchZoomRotate.disableRotation();
 
     map.current.on("load", () => {
-      // geolocate.trigger();
+      geolocate.trigger();
       // Make sure style has loaded before any data is added
       Promise.all(
         ["marker-circle", "marker-drop", "marker-bag"].map((markerName) => {
@@ -166,7 +169,7 @@ export default function BaseMap() {
         }),
       ).then(() => setIsMapLoaded(true));
     });
-  }, [mapContainer.current, center, zoom]);
+  }, [mapContainer.current]);
 
   useEffect(() => {
     if (!map.current) return;

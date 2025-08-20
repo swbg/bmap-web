@@ -1,3 +1,6 @@
+export const defaultCenter = [11.575892981950567, 48.137836512295905] as [number, number]; // lon, lat
+export const defaultZoom = 14;
+
 export enum Colors {
   Marker0 = "#6FA320", // dunkelgrün wirtshaus
   Marker1 = "#A2C147", // mittelgrün biergarten
@@ -12,7 +15,7 @@ export enum Colors {
   Halo = "#ffffff",
 }
 
-export const Sources = ["circle", "drop", "bag"] as const;
+export const Sources = ["circle", "bag", "drop"] as const;
 
 export const ProductTypes = [
   "Helles",

@@ -1,22 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { FilterAction } from "../types";
 import { normalizeString } from "../utils";
-import { ClosePill } from "./Buttons";
-
-function FilterPill({
-  term,
-  removeFilterTerm,
-}: {
-  term: string;
-  removeFilterTerm: (term: string) => void;
-}) {
-  return (
-    <div className="filter-pill">
-      {term}
-      <ClosePill onClick={() => removeFilterTerm(term)} />
-    </div>
-  );
-}
+import { CloseButton, FilterButton } from "./Buttons";
 
 function Suggestions({
   suggestions,
@@ -39,11 +24,15 @@ function Suggestions({
 export default function FilterBar({
   options,
   filterTerms,
+  expand,
   dispatchFilter,
+  setExpand,
 }: {
   options: string[];
   filterTerms: string[];
+  expand: boolean;
   dispatchFilter: React.Dispatch<FilterAction>;
+  setExpand: (b: boolean) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -61,10 +50,7 @@ export default function FilterBar({
     dispatchFilter({ group: "brandName", key: term, visible: true });
     setSearchTerm("");
     setSuggestions([]);
-  };
-
-  const removeFilterTerm = (term: string) => {
-    dispatchFilter({ group: "brandName", key: term, visible: false });
+    setExpand(false);
   };
 
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,22 +70,20 @@ export default function FilterBar({
     }
   };
 
+  if (!expand) {
+    return <FilterButton onClick={() => setExpand(true)} />;
+  }
+
   return (
-    <div className="filter-bar">
-      <div className="filter-pills">
-        {filterTerms.map((filterTerm) => (
-          <FilterPill key={filterTerm} term={filterTerm} removeFilterTerm={removeFilterTerm} />
-        ))}
-      </div>
-      <div className="filter-input">
-        <input
-          autoFocus
-          placeholder="Nach Brauereien filtern..."
-          value={searchTerm}
-          onChange={handleOnChange}
-        />
-        <Suggestions suggestions={suggestions} addFilterTerm={addFilterTerm} />
-      </div>
+    <div className="search-bar">
+      <CloseButton onClick={() => setExpand(false)} />
+      <input
+        autoFocus
+        placeholder="Nach Brauereien filtern..."
+        value={searchTerm}
+        onChange={handleOnChange}
+      />
+      <Suggestions suggestions={suggestions} addFilterTerm={addFilterTerm} />
     </div>
   );
 }

@@ -7,7 +7,7 @@
    viewBox="0 0 50 50"
    version="1.1"
    id="svg1"
-   sodipodi:docname="clock.svg"
+   sodipodi:docname="chevron-down.svg"
    inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,27 +23,34 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.1035627"
-     inkscape:cx="89.574477"
-     inkscape:cy="80.713692"
-     inkscape:window-width="2560"
-     inkscape:window-height="1369"
-     inkscape:window-x="-8"
-     inkscape:window-y="79"
-     inkscape:window-maximized="1"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="-20.506097"
+     inkscape:cy="195.86858"
+     inkscape:window-width="1350"
+     inkscape:window-height="1237"
+     inkscape:window-x="1352"
+     inkscape:window-y="212"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg1"
-     showguides="true" />
+     showguides="true">
+    <sodipodi:guide
+       position="130.21371,507.2447"
+       orientation="0,-1"
+       id="guide1"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
   <defs
-     id="defs1" />
-  <circle
-     style="fill:none;stroke:#555555;stroke-width:4;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-     id="path3"
-     cx="25"
-     cy="25"
-     r="22.999998" />
+     id="defs1">
+    <rect
+       x="52.325902"
+       y="67.175144"
+       width="48.790368"
+       height="67.882251"
+       id="rect1" />
+  </defs>
   <path
-     style="fill:none;fill-opacity:1;stroke:#555555;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-     d="m 24.996343,11.451699 v 13.789429 l 13.297791,7.699506"
-     id="path2"
+     style="fill:none;stroke:#555555;stroke-width:3.99998;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+     d="M 6.9999899,20.10925 24.999999,29.628304 43.00001,20.10925"
+     id="path1-8-7"
      sodipodi:nodetypes="ccc" />
 </svg>
