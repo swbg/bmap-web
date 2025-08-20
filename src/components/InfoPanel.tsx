@@ -2,8 +2,8 @@ import Clock from "../assets/clock.svg";
 import Globe from "../assets/globe.svg";
 import Location from "../assets/location.svg";
 import Phone from "../assets/phone.svg";
-import { OPENING_TIME_LABELS, OPENING_TIME_STATUS, PRODUCT_TYPES, WEEKDAY } from "../const";
-import { Entry, OpeningTimeStatus, Place, Product } from "../types";
+import { OpeningLabels, OpeningStatus, ProductTypes, Weekdays } from "../const";
+import { Entry, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
 
@@ -17,12 +17,12 @@ function googlifyAddress(address: string | undefined) {
   if (!address) return "";
 
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Location} />
       <a target="_blank" href={`https://www.google.com/maps/place/${encodeURIComponent(address)}/`}>
         {address}
       </a>
-    </p>
+    </div>
   );
 }
 
@@ -37,12 +37,12 @@ function formatPhone(phone: string | undefined) {
     p = phone.slice(0, 4) + " " + phone.slice(4);
   }
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Phone} />
       <a className="a-phone" href={`tel:${phone}`}>
         {p}
       </a>
-    </p>
+    </div>
   );
 }
 
@@ -50,13 +50,37 @@ function formatWebsite(website: string | undefined) {
   if (!website) return "";
 
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Globe} />
       <a target="_blank" href={website}>
         {website}
       </a>
-    </p>
+    </div>
   );
+}
+
+function getOpeningStatus(hours: string): OpeningStatus {
+  const now = new Date();
+  const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+  const currentDay = Weekdays[berlinNow.getDay()];
+  const currentMinutes = berlinNow.getHours() * 60 + berlinNow.getMinutes();
+
+  const dayRegex = new RegExp(`${currentDay}:\\s*(\\d{1,2}:\\d{2})-(\\d{1,2}:\\d{2})`);
+  const match = hours.match(dayRegex);
+  if (!match) return OpeningStatus.Unknown;
+
+  const [_, startStr, endStr] = match;
+  const [startMins, endMins] = [startStr, endStr].map((t) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  });
+
+  const isOpen =
+    endMins < startMins
+      ? currentMinutes >= startMins || currentMinutes <= endMins
+      : currentMinutes >= startMins && currentMinutes <= endMins;
+
+  return isOpen ? OpeningStatus.Open : OpeningStatus.Closed;
 }
 
 function formatHours(hours: string | undefined) {
@@ -87,48 +111,23 @@ function formatHours(hours: string | undefined) {
   };
 
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Clock} />
       <div>
-        {openingStatus == "unknown" ? (
+        {openingStatus === OpeningStatus.Unknown ? (
           // Fallback if 24/7 open
           <div className="opening-hour-panel open">{breakify(hours)}</div>
         ) : (
           <>
             <div className={`opening-hour-panel ${openingStatus}`}>
-              {OPENING_TIME_LABELS[openingStatus]}
+              {OpeningLabels[openingStatus]}
             </div>
-            <br />
             {breakify(hours)}
           </>
         )}
       </div>
-    </p>
+    </div>
   );
-}
-
-function getOpeningStatus(hours: string): OpeningTimeStatus {
-  const now = new Date();
-  const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
-  const currentDay = WEEKDAY[berlinNow.getDay()];
-  const currentMinutes = berlinNow.getHours() * 60 + berlinNow.getMinutes();
-
-  const dayRegex = new RegExp(`${currentDay}:\\s*(\\d{1,2}:\\d{2})-(\\d{1,2}:\\d{2})`);
-  const match = hours.match(dayRegex);
-  if (!match) return OPENING_TIME_STATUS.unknown;
-
-  const [_, startStr, endStr] = match;
-  const [startMins, endMins] = [startStr, endStr].map((t) => {
-    const [h, m] = t.split(":").map(Number);
-    return h * 60 + m;
-  });
-
-  const isOpen =
-    endMins < startMins
-      ? currentMinutes >= startMins || currentMinutes <= endMins
-      : currentMinutes >= startMins && currentMinutes <= endMins;
-
-  return isOpen ? OPENING_TIME_STATUS.open : OPENING_TIME_STATUS.closed;
 }
 
 function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
@@ -137,11 +136,11 @@ function formatEntries(activeEntries: Entry[] | undefined, products: Map<number,
   const entrySorter = (ea: Entry, eb: Entry) => {
     const pa = products.get(ea.productId)!.productType;
     const pb = products.get(eb.productId)!.productType;
-    return PRODUCT_TYPES.indexOf(pa) - PRODUCT_TYPES.indexOf(pb);
+    return ProductTypes.indexOf(pa) - ProductTypes.indexOf(pb);
   };
 
   return (
-    <p>
+    <div className="info-element">
       <table>
         <tbody>
           {activeEntries.sort(entrySorter).map((e, i) => {
@@ -157,7 +156,7 @@ function formatEntries(activeEntries: Entry[] | undefined, products: Map<number,
           })}
         </tbody>
       </table>
-    </p>
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import { placeToGeoJSON } from "./data";
-import { Entry, Place, PlaceFeature, Source } from "./types";
+import { Entry, Place, PlaceFeature, Product, Source } from "./types";
 
 export function makeHoverable(
   map: React.MutableRefObject<maplibregl.Map | null>,
@@ -60,8 +60,9 @@ export function makeClickable(
 export function addPlacesSource(
   map: React.MutableRefObject<maplibregl.Map | null>,
   source: Source,
-  places: Map<number, Place>,
   entries: Map<number, Entry[]> | null,
+  places: Map<number, Place>,
+  products: Map<number, Product> | null,
 ) {
   if (!map.current) return;
 
@@ -71,7 +72,7 @@ export function addPlacesSource(
       type: "FeatureCollection",
       features: Array.from(places.values())
         .filter((place) => place.source === source)
-        .map((place) => placeToGeoJSON(place, entries)),
+        .map((place) => placeToGeoJSON(place, entries, products)),
     },
   });
 }

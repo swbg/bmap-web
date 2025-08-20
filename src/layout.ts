@@ -9,8 +9,8 @@ export function getMarkerLayout(markerName: string) {
       ["linear"],
       ["zoom"],
       // zoom is 12 (or less) -> 20% size
-      12,
-      0.2,
+      10,
+      0.16,
       // zoom is 19 (or greater) -> 40% size
       19,
       0.4,
@@ -27,8 +27,8 @@ export function getMarkerPaint() {
       ["linear"],
       ["zoom"],
       // zoom is 12 (or less)
-      12,
-      0.5,
+      10,
+      0.4,
       // zoom is 19 (or greater)
       19,
       1.0,

@@ -1,17 +1,7 @@
-import { BRAND_NAMES, OPENING_TIME_STATUS, PRODUCT_TYPES } from "./const";
+import { ProductTypes, Sources } from "./const";
 
-export type Source = "circle" | "drop" | "bag";
-
-export type Weekday =
-  | "Sonntag"
-  | "Montag"
-  | "Dienstag"
-  | "Mittwoch"
-  | "Donnerstag"
-  | "Freitag"
-  | "Samstag";
-
-export type OpeningTimeStatus = (typeof OPENING_TIME_STATUS)[keyof typeof OPENING_TIME_STATUS];
+export type Source = (typeof Sources)[number];
+export type ProductType = (typeof ProductTypes)[number];
 
 export type Place = {
   placeId: number;
@@ -52,6 +42,7 @@ export type PlaceGeoJSON = GeoJSONPoint & {
     note: string;
     validUntil: boolean;
     priceRating: number | undefined;
+    brandNames: string[];
   };
 };
 
@@ -70,25 +61,16 @@ export type Product = {
   // indexed by productId: number;
   brandName: string;
   productName: string;
-  productType: (typeof PRODUCT_TYPES)[number];
-};
-
-export type VisibilityState = {
-  circle: boolean;
-  drop: boolean;
-  bag: boolean;
-};
-
-export type VisibilityAction = {
-  source: Source;
-  visible: boolean;
+  productType: (typeof ProductTypes)[number];
 };
 
 export type FilterState = {
-  [key: (typeof BRAND_NAMES)[number]]: boolean;
+  source: { [key in (typeof Sources)[number]]: boolean };
+  brandName: string[];
 };
 
 export type FilterAction = {
-  key: (typeof BRAND_NAMES)[number];
-  active: boolean;
+  group: keyof FilterState;
+  key: (typeof Sources)[number] | string;
+  visible: boolean;
 };

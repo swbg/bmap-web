@@ -1,29 +1,19 @@
-import maplibregl from "maplibre-gl";
+import maplibregl, { FilterSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { BRAND_NAMES, Colors, SOURCES } from "../const";
+import { Colors, Sources, defaultCenter, defaultZoom } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
-import {
-  Entry,
-  FilterAction,
-  FilterState,
-  Place,
-  PlaceFeature,
-  Product,
-  VisibilityAction,
-  VisibilityState,
-} from "../types";
+import { Entry, FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
 import { getLocationState } from "../utils";
+import { dec } from "../utils";
 import ControlBar from "./ControlBar";
 import InfoPanel from "./InfoPanel";
 
 export default function BaseMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const center = [11.575892981950567, 48.137836512295905] as [number, number]; // lon, lat
-  const zoom = 14;
 
   const [places, setPlaces] = useState<Map<number, Place> | null>(null);
   const [entries, setEntries] = useState<Map<number, Entry[]> | null>(null);
@@ -34,22 +24,42 @@ export default function BaseMap() {
   const [hoveredPlace, setHoveredPlace] = useState<PlaceFeature | null>(null);
   const [activePlace, setActivePlace_] = useState<PlaceFeature | undefined>(undefined);
 
-  const defaultVisibility = { circle: true, drop: true, bag: true };
-  const visibilityReducer = (state: VisibilityState, action: VisibilityAction) => {
-    if (!map.current) return state;
-    map.current.setLayoutProperty(
-      `${action.source}-markers`,
-      "visibility",
-      action.visible ? "visible" : "none",
-    );
-    return { ...state, [action.source]: action.visible };
-  };
-  const [layerVisibility, dispatchVisibility] = useReducer(visibilityReducer, defaultVisibility);
-
-  const defaultFilter = [...BRAND_NAMES, "Andere"].reduce((acc, k) => ({ ...acc, [k]: true }), {});
+  const defaultFilter = {
+    source: Sources.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+    // brandName: BrandNames.reduce((acc, k) => ({ ...acc, [k]: true }), {}),
+    brandName: [] as string[],
+  } as FilterState;
   const filterReducer = (state: FilterState, action: FilterAction) => {
-    console.log(state, action);
-    return { ...state, [action.key]: action.active };
+    if (!map.current) return state;
+    if (action.group == "source") {
+      const newState = {
+        ...state,
+        [action.group]: { ...state[action.group], [action.key]: action.visible },
+      };
+      map.current.setLayoutProperty(
+        `${action.key}-markers`,
+        "visibility",
+        action.visible ? "visible" : "none",
+      );
+      return newState;
+    }
+    if (action.group == "brandName") {
+      const newList = action.visible
+        ? [...state[action.group], action.key]
+        : state[action.group].filter((key) => key !== action.key);
+      const newState = {
+        ...state,
+        [action.group]: newList,
+      };
+
+      const mapFilter = newList.length
+        ? ["any", ...newList.map((brandName) => ["in", brandName, ["get", "brandNames"]])]
+        : null;
+      map.current.setFilter("circle-markers", mapFilter as FilterSpecification);
+
+      return newState;
+    }
+    return state;
   };
   const [filterState, dispatchFilter] = useReducer(filterReducer, defaultFilter);
 
@@ -65,7 +75,7 @@ export default function BaseMap() {
         const place = places.get(newPlace.id)!;
         map.current.setFeatureState(newPlace, { selected: true });
         history.replaceState(null, "", `/place/${newPlace.id}`);
-        dispatchVisibility({ source: newPlace.source, visible: true });
+        dispatchFilter({ group: "source", key: newPlace.source, visible: true });
         map.current.flyTo({
           center: [place.lon, place.lat],
           zoom: Math.max(map.current.getZoom(), 15),
@@ -90,23 +100,22 @@ export default function BaseMap() {
   useEffect(() => {
     (async () => {
       // Fetch entries
-      const csvString = await fetchData("/entries.csv");
+      const csvString = await fetchData("/entries.txt");
       if (!csvString) return;
-      setEntries(parseEntries(csvString));
+      // console.log(enc(csvString));
+      setEntries(parseEntries(dec(csvString)));
     })();
     (async () => {
       // Fetch products
-      const csvString = await fetchData("/products.csv");
+      const csvString = await fetchData("/products.txt");
       if (!csvString) return;
-      setProducts(parseProducts(csvString));
+      setProducts(parseProducts(dec(csvString)));
     })();
     (async () => {
       // Fetch places
-      const csvString = await fetchData("/places.csv");
+      const csvString = await fetchData("/places.txt");
       if (!csvString) return;
-
-      const places = parsePlaces(csvString);
-      setPlaces(places);
+      setPlaces(parsePlaces(dec(csvString)));
       // console.log("setPlaces", places);
     })();
   }, []);
@@ -118,16 +127,19 @@ export default function BaseMap() {
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: "/osm_clean.json",
-      center: center,
-      zoom: zoom,
-      minZoom: 12,
+      center: defaultCenter,
+      zoom: defaultZoom,
+      minZoom: 10,
       maxZoom: 19,
+      pitchWithRotate: false,
+      dragRotate: false,
+      touchZoomRotate: true,
     });
     map.current.addControl(
       new maplibregl.NavigationControl({
-        visualizePitch: true,
+        visualizePitch: false,
         showZoom: true,
-        showCompass: true,
+        showCompass: false,
       }),
     );
     const geolocate = new maplibregl.GeolocateControl({
@@ -137,9 +149,11 @@ export default function BaseMap() {
       trackUserLocation: true,
     });
     map.current.addControl(geolocate);
+    map.current.dragRotate.disable();
+    map.current.touchZoomRotate.disableRotation();
 
     map.current.on("load", () => {
-      // geolocate.trigger();
+      geolocate.trigger();
       // Make sure style has loaded before any data is added
       Promise.all(
         ["marker-circle", "marker-drop", "marker-bag"].map((markerName) => {
@@ -155,7 +169,7 @@ export default function BaseMap() {
         }),
       ).then(() => setIsMapLoaded(true));
     });
-  }, [mapContainer.current, center, zoom]);
+  }, [mapContainer.current]);
 
   useEffect(() => {
     if (!map.current) return;
@@ -164,9 +178,9 @@ export default function BaseMap() {
     if (!entries) return;
     if (!products) return;
 
-    addPlacesSource(map, "circle", places, entries);
-    addPlacesSource(map, "drop", places, null);
-    addPlacesSource(map, "bag", places, null);
+    addPlacesSource(map, "circle", entries, places, products);
+    addPlacesSource(map, "drop", null, places, null);
+    addPlacesSource(map, "bag", null, places, null);
 
     map.current.addLayer({
       id: "circle-markers",
@@ -249,7 +263,7 @@ export default function BaseMap() {
       },
     });
 
-    for (const source of SOURCES) {
+    for (const source of Sources) {
       makeHoverable(map, source, `${source}-markers`, setHoveredPlace);
       makeClickable(map, source, `${source}-markers`, setActivePlace);
     }
@@ -259,7 +273,7 @@ export default function BaseMap() {
 
     return () => {
       if (!map.current) return;
-      for (const source of SOURCES) {
+      for (const source of Sources) {
         if (map.current.getLayer(`${source}-markers`)) {
           map.current.removeLayer(`${source}-markers`);
         }
@@ -291,10 +305,9 @@ export default function BaseMap() {
       ) : (
         <ControlBar
           places={places}
-          layerVisibility={layerVisibility}
+          products={products}
           filterState={filterState}
           setActivePlace={setActivePlace}
-          dispatchVisibility={dispatchVisibility}
           dispatchFilter={dispatchFilter}
         />
       )}

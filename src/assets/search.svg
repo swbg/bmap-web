@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.1035625"
-     inkscape:cx="-4.5109451"
-     inkscape:cy="96.824214"
+     inkscape:zoom="4.3891002"
+     inkscape:cx="71.768697"
+     inkscape:cy="117.90572"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
      inkscape:window-x="-8"
@@ -35,13 +35,13 @@
   <defs
      id="defs1" />
   <circle
-     style="fill:none;stroke:#555555;stroke-width:6;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:none;stroke:#555555;stroke-width:4;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="path2"
-     cx="30.969404"
-     cy="19.030594"
-     r="15.925099" />
+     cx="28.527719"
+     cy="21.472281"
+     r="19.472281" />
   <path
-     style="fill:#000000;stroke:#555555;stroke-width:5.99999;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;stroke-linejoin:miter"
-     d="M 3.107212,46.892787 18.801418,31.198582"
+     style="fill:#000000;stroke:#555555;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+     d="M 2,48 13.878572,36.121429"
      id="path1-8-7" />
 </svg>

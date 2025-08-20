@@ -1,13 +1,13 @@
-import { Source } from "./types";
-import { Weekday } from "./types";
-import { OpeningTimeStatus } from "./types";
+export const defaultCenter = [11.575892981950567, 48.137836512295905] as [number, number]; // lon, lat
+export const defaultZoom = 14;
 
 export enum Colors {
-  Marker0 = "#99d18c", // hellgrün
-  Marker1 = "#5db24a", // mittelgrün
-  Marker2 = "#f2bb43", // gelb
-  Marker3 = "#d87d06", // orange
+  Marker0 = "#6FA320", // dunkelgrün wirtshaus
+  Marker1 = "#A2C147", // mittelgrün biergarten
+  Marker2 = "#F2CC44", // gelb restaurant
+  Marker3 = "#DC852A", // orange
   Marker4 = "#c64e11", // dunkelorange
+  Marker5 = "#AD3E47", // bar
   MarkerGrey = "#bbbbbb",
   MarkerActive = "#ff3fac", // pink
   MarkerDrop = "#2faad4", // blautürkis
@@ -15,30 +15,9 @@ export enum Colors {
   Halo = "#ffffff",
 }
 
-export const SOURCES = ["circle", "drop", "bag"] as Source[];
-export const WEEKDAY = [
-  "Sonntag",
-  "Montag",
-  "Dienstag",
-  "Mittwoch",
-  "Donnerstag",
-  "Freitag",
-  "Samstag",
-] as Weekday[];
+export const Sources = ["circle", "bag", "drop"] as const;
 
-export const OPENING_TIME_STATUS = {
-  open: "open",
-  closed: "closed",
-  unknown: "unknown",
-} as const;
-
-export const OPENING_TIME_LABELS: Record<OpeningTimeStatus, string> = {
-  [OPENING_TIME_STATUS.open]: "Geöffnet",
-  [OPENING_TIME_STATUS.closed]: "Geschlossen",
-  [OPENING_TIME_STATUS.unknown]: "",
-};
-
-export const PRODUCT_TYPES = [
+export const ProductTypes = [
   "Helles",
   "Helles Alkoholfrei",
   "Weißbier",
@@ -47,14 +26,37 @@ export const PRODUCT_TYPES = [
   "Aperol",
   "Spritz",
   "Spritz Alkoholfrei",
-];
+] as const;
 
-export const BRAND_NAMES = [
-  "Augustiner",
-  "Tegernseer",
-  "Hacker",
-  "Spaten",
-  "Löwenbräu",
-  "Paulaner",
-  "Giesinger",
-];
+// export const BrandNames = [
+//   "Augustiner",
+//   "Tegernseer",
+//   "Hacker",
+//   "Spaten",
+//   "Löwenbräu",
+//   "Paulaner",
+//   "Giesinger",
+//   "Andere",
+// ] as const;
+
+export const Weekdays = [
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+] as const;
+
+export enum OpeningStatus {
+  Open = "open",
+  Closed = "closed",
+  Unknown = "unknown",
+}
+
+export const OpeningLabels: Record<OpeningStatus, string> = {
+  [OpeningStatus.Open]: "Geöffnet",
+  [OpeningStatus.Closed]: "Geschlossen",
+  [OpeningStatus.Unknown]: "",
+};
