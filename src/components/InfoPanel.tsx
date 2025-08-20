@@ -17,12 +17,12 @@ function googlifyAddress(address: string | undefined) {
   if (!address) return "";
 
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Location} />
       <a target="_blank" href={`https://www.google.com/maps/place/${encodeURIComponent(address)}/`}>
         {address}
       </a>
-    </p>
+    </div>
   );
 }
 
@@ -37,12 +37,12 @@ function formatPhone(phone: string | undefined) {
     p = phone.slice(0, 4) + " " + phone.slice(4);
   }
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Phone} />
       <a className="a-phone" href={`tel:${phone}`}>
         {p}
       </a>
-    </p>
+    </div>
   );
 }
 
@@ -50,12 +50,12 @@ function formatWebsite(website: string | undefined) {
   if (!website) return "";
 
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Globe} />
       <a target="_blank" href={website}>
         {website}
       </a>
-    </p>
+    </div>
   );
 }
 
@@ -85,10 +85,10 @@ function formatHours(hours: string | undefined) {
   };
 
   return (
-    <p className="info-element">
+    <div className="info-element">
       <img src={Clock} />
       <div>{breakify(hours)}</div>
-    </p>
+    </div>
   );
 }
 
@@ -102,7 +102,7 @@ function formatEntries(activeEntries: Entry[] | undefined, products: Map<number,
   };
 
   return (
-    <p>
+    <div className="info-element">
       <table>
         <tbody>
           {activeEntries.sort(entrySorter).map((e, i) => {
@@ -118,7 +118,7 @@ function formatEntries(activeEntries: Entry[] | undefined, products: Map<number,
           })}
         </tbody>
       </table>
-    </p>
+    </div>
   );
 }
 

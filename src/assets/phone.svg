@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="1.5517813"
-     inkscape:cx="-78.619328"
-     inkscape:cy="50.587027"
+     inkscape:zoom="4.3891003"
+     inkscape:cx="74.50274"
+     inkscape:cy="113.12113"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
      inkscape:window-x="-8"
@@ -35,20 +35,20 @@
   <defs
      id="defs1" />
   <g
-     style="fill:none;stroke:#555555;stroke-width:43.9186;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:none;stroke:#555555;stroke-width:33.9888;stroke-dasharray:none;stroke-opacity:1"
      id="g2"
-     transform="matrix(0.1138487,0,0,0.11384518,-0.31520263,-3.5341559)">
+     transform="matrix(0.11813422,0,0,0.11723904,-1.2684963,-4.3835179)">
     <g
        id="g4"
-       style="fill:none;stroke:#555555;stroke-width:43.9186;stroke-dasharray:none;stroke-opacity:1">
+       style="fill:none;stroke:#555555;stroke-width:33.9888;stroke-dasharray:none;stroke-opacity:1">
       <g
          id="g3"
-         style="fill:none;stroke:#555555;stroke-width:43.9186;stroke-dasharray:none;stroke-opacity:1">
+         style="fill:none;stroke:#555555;stroke-width:33.9888;stroke-dasharray:none;stroke-opacity:1">
         <path
            d="m 404.46369,404.58983 c -16.12761,16.92502 -34.12273,42.58374 -67.90769,42.21617 -29.7,-1.9 -57.3,-13.5 -78,-23.4 -121.97991,-59.05034 -193.169062,-164.08395 -219.6,-235.5 -9.3,-24.9 -12.7,-44.3 -11.2,-62.6 3.368666,-27.638623 29.507845,-45.407845 47.9,-63.8 6.290674,-5.905531 17.686034,-12.515242 29.8,-0.1 38.65864,38.84514 40.64372,40.74372 55.1,55.2 10.6,10.6 10.6,20.4 0,31 -11.09605,11.14266 -22.04086,22.43786 -33.7,33 -0.2,0.2 -0.4,0.3 -0.5,0.5 -19.92531,17.59087 16.27004,56.10454 32.17528,76.3 25.10221,31.69427 55.1842,58.71856 88.9,80.9 15.25783,8.79256 27.55272,21.92406 43.72472,8.3 l 34.2,-34.2 c 12.0298,-12.0298 22.79894,-7.54955 29.5,-0.2 l 55.3,55.3 c 10.3,10.2 10.4353,20.15881 -5.69231,37.08383 z"
            id="path1"
            sodipodi:nodetypes="zccccccssccccssccz"
-           style="fill:none;stroke:#555555;stroke-width:43.9186;stroke-dasharray:none;stroke-opacity:1" />
+           style="fill:none;stroke:#555555;stroke-width:33.9888;stroke-dasharray:none;stroke-opacity:1" />
       </g>
     </g>
   </g>
