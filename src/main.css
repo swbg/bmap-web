@@ -432,3 +432,16 @@ p.info-subtitle {
     background-color: white;
   }
 }
+
+/* OpeningStatus */
+.opening-hour-panel {
+  margin-bottom: 0.4rem;
+}
+
+.opening-hour-panel.open {
+  color: #065f46;
+}
+
+.opening-hour-panel.closed {
+  color: #991b1b;
+}

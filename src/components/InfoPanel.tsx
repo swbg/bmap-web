@@ -2,7 +2,7 @@ import Clock from "../assets/clock.svg";
 import Globe from "../assets/globe.svg";
 import Location from "../assets/location.svg";
 import Phone from "../assets/phone.svg";
-import { ProductTypes } from "../const";
+import { OpeningLabels, OpeningStatus, ProductTypes, Weekdays } from "../const";
 import { Entry, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
@@ -59,8 +59,34 @@ function formatWebsite(website: string | undefined) {
   );
 }
 
+function getOpeningStatus(hours: string): OpeningStatus {
+  const now = new Date();
+  const berlinNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+  const currentDay = Weekdays[berlinNow.getDay()];
+  const currentMinutes = berlinNow.getHours() * 60 + berlinNow.getMinutes();
+
+  const dayRegex = new RegExp(`${currentDay}:\\s*(\\d{1,2}:\\d{2})-(\\d{1,2}:\\d{2})`);
+  const match = hours.match(dayRegex);
+  if (!match) return OpeningStatus.Unknown;
+
+  const [_, startStr, endStr] = match;
+  const [startMins, endMins] = [startStr, endStr].map((t) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  });
+
+  const isOpen =
+    endMins < startMins
+      ? currentMinutes >= startMins || currentMinutes <= endMins
+      : currentMinutes >= startMins && currentMinutes <= endMins;
+
+  return isOpen ? OpeningStatus.Open : OpeningStatus.Closed;
+}
+
 function formatHours(hours: string | undefined) {
   if (!hours) return "";
+
+  const openingStatus = getOpeningStatus(hours);
 
   const breakify = (s: string) => {
     const l = s.trim().split("Uhr ");
@@ -87,7 +113,19 @@ function formatHours(hours: string | undefined) {
   return (
     <div className="info-element">
       <img src={Clock} />
-      <div>{breakify(hours)}</div>
+      <div>
+        {openingStatus === OpeningStatus.Unknown ? (
+          // Fallback if 24/7 open
+          <div className="opening-hour-panel open">{breakify(hours)}</div>
+        ) : (
+          <>
+            <div className={`opening-hour-panel ${openingStatus}`}>
+              {OpeningLabels[openingStatus]}
+            </div>
+            {breakify(hours)}
+          </>
+        )}
+      </div>
     </div>
   );
 }

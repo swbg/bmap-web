@@ -38,3 +38,25 @@ export const ProductTypes = [
 //   "Giesinger",
 //   "Andere",
 // ] as const;
+
+export const Weekdays = [
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+] as const;
+
+export enum OpeningStatus {
+  Open = "open",
+  Closed = "closed",
+  Unknown = "unknown",
+}
+
+export const OpeningLabels: Record<OpeningStatus, string> = {
+  [OpeningStatus.Open]: "Geöffnet",
+  [OpeningStatus.Closed]: "Geschlossen",
+  [OpeningStatus.Unknown]: "",
+};
