@@ -131,33 +131,118 @@ function getOpeningStatus(hours: string): OpeningTimeStatus {
   return isOpen ? OPENING_TIME_STATUS.open : OPENING_TIME_STATUS.closed;
 }
 
-function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
-  if (!activeEntries) return <p>Noch keine Preise verfügbar.</p>;
+function sortEntriesByProductType(
+  entries: Entry[],
+  products: Map<number, Product>,
+  typeOrder: string[],
+) {
+  return [...entries].sort((a, b) => {
+    const productA = products.get(a.productId);
+    const productB = products.get(b.productId);
 
-  const entrySorter = (ea: Entry, eb: Entry) => {
-    const pa = products.get(ea.productId)!.productType;
-    const pb = products.get(eb.productId)!.productType;
-    return PRODUCT_TYPES.indexOf(pa) - PRODUCT_TYPES.indexOf(pb);
-  };
+    if (!productA || !productB) return 0;
+
+    const indexA = typeOrder.indexOf(productA.productType);
+    const indexB = typeOrder.indexOf(productB.productType);
+
+    return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+  });
+}
+
+function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
+  if (!activeEntries || activeEntries.length === 0) {
+    return <p>Noch keine Preise verfügbar.</p>;
+  }
+
+  const sorted = sortEntriesByProductType(activeEntries, products, PRODUCT_TYPES);
+
+  const grouped = new Map<string, Entry[]>();
+
+  // Group by brand or fallback to product name
+  for (const entry of sorted) {
+    const product = products.get(entry.productId)!;
+    const key = product.brandName || product.productName;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(entry);
+  }
+
+  const renderRow = (
+    name: string,
+    volume: string,
+    price: string,
+    options?: { indent?: boolean; bold?: boolean },
+    key?: string,
+  ) => (
+    <tr key={key}>
+      <td style={{ paddingLeft: options?.indent ? "1em" : 0 }}>
+        {options?.bold ? <strong>{name}</strong> : name}
+      </td>
+      <td style={{ textAlign: "right" }}>{volume}</td>
+      <td style={{ textAlign: "right" }}>{price}</td>
+    </tr>
+  );
+
+  const rows: React.ReactNode[] = [];
+
+  [...grouped.entries()].forEach(([groupKey, entries], index) => {
+    const firstEntry = entries[0];
+    const product = products.get(firstEntry.productId)!;
+
+    // Spacer row between blocks
+    if (index > 0) {
+      rows.push(
+        <tr key={`spacer-${index}`}>
+          <td colSpan={3} style={{ height: "0.5em" }} />
+        </tr>,
+      );
+    }
+
+    if (entries.length === 1) {
+      // Single entry → show full info in one line
+      const entry = entries[0];
+      const name =
+        product.brandName && product.productName
+          ? `${product.brandName} ${product.productName}`
+          : product.productName;
+
+      rows.push(
+        renderRow(
+          name,
+          formatVolume(entry.volume),
+          formatPrice(entry.price),
+          { bold: true },
+          `single-${index}`,
+        ),
+      );
+    } else {
+      // Grouped brand with heading + indented product rows (e.g multiple entries for a beer brand)
+      rows.push(
+        <tr key={`header-${index}`}>
+          <td colSpan={3}>
+            <strong>{groupKey}</strong>
+          </td>
+        </tr>,
+      );
+
+      entries.forEach((entry, i) => {
+        const p = products.get(entry.productId)!;
+        rows.push(
+          renderRow(
+            p.productName,
+            formatVolume(entry.volume),
+            formatPrice(entry.price),
+            { indent: true },
+            `entry-${groupKey}-${i}`,
+          ),
+        );
+      });
+    }
+  });
 
   return (
-    <p>
-      <table>
-        <tbody>
-          {activeEntries.sort(entrySorter).map((e, i) => {
-            const p = products.get(e.productId)!;
-            return (
-              <tr key={i}>
-                <td>{p.brandName || p.productName}</td>
-                <td>{p.brandName ? p.productName : ""}</td>
-                <td>{formatVolume(e.volume)}</td>
-                <td>{formatPrice(e.price)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </p>
+    <table>
+      <tbody>{rows}</tbody>
+    </table>
   );
 }
 
