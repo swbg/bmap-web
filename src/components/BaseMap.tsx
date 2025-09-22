@@ -1,19 +1,23 @@
 import maplibregl, { FilterSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { Colors, Sources, defaultCenter, defaultZoom } from "../const";
+import { AboutState, Colors, Sources, defaultCenter, defaultZoom } from "../const";
 import { fetchData, parseEntries, parsePlaces, parseProducts } from "../data";
 import { getMarkerLayout, getMarkerPaint } from "../layout";
 import { addPlacesSource, makeClickable, makeHoverable } from "../map";
 import { Entry, FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
 import { getLocationState } from "../utils";
 import { dec } from "../utils";
+import AboutPanel from "./AboutPanel";
+import AttribControl from "./AttribControl";
 import ControlBar from "./ControlBar";
 import InfoPanel from "./InfoPanel";
 
 export default function BaseMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const [hideAttrib, setHideAttrib] = useState(false);
+  const [showAbout, setShowAbout] = useState<AboutState>(AboutState.None);
 
   const [places, setPlaces] = useState<Map<number, Place> | null>(null);
   const [entries, setEntries] = useState<Map<number, Entry[]> | null>(null);
@@ -134,14 +138,17 @@ export default function BaseMap() {
       pitchWithRotate: false,
       dragRotate: false,
       touchZoomRotate: true,
-    });
-    map.current.addControl(
-      new maplibregl.NavigationControl({
-        visualizePitch: false,
-        showZoom: true,
-        showCompass: false,
-      }),
-    );
+      attributionControl: false,
+    })
+      .addControl(
+        new maplibregl.NavigationControl({
+          visualizePitch: false,
+          showZoom: true,
+          showCompass: false,
+        }),
+      )
+      .on("drag", () => setHideAttrib(true));
+
     const geolocate = new maplibregl.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true,
@@ -295,7 +302,9 @@ export default function BaseMap() {
   return (
     <div className="map">
       <div className="map-container" ref={mapContainer} />
-      {activePlace ? (
+      {showAbout !== AboutState.None ? (
+        <AboutPanel showAbout={showAbout} setShowAbout={setShowAbout} />
+      ) : activePlace ? (
         <InfoPanel
           activePlace={places.get(activePlace.id)!}
           activeEntries={entries.get(activePlace.id)}
@@ -311,6 +320,11 @@ export default function BaseMap() {
           dispatchFilter={dispatchFilter}
         />
       )}
+      <AttribControl
+        hideAttrib={hideAttrib}
+        setHideAttrib={setHideAttrib}
+        setShowAbout={setShowAbout}
+      />
     </div>
   );
 }

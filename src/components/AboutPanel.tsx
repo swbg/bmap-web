@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { privacyText } from "../assets/about.ts";
-import ChevronDown from "../assets/chevron-down.svg";
-import ChevronUp from "../assets/chevron-up.svg";
+import { AboutState } from "../const.ts";
 import { dec } from "../utils";
-import { AboutButton, CloseButton } from "./Buttons";
+import { CloseButton } from "./Buttons";
 
 const ic = (import.meta.env.VITE_IC as string).split(",").map((c, i) => (
   <span key={i} style={{ display: "block" }}>
@@ -11,75 +9,65 @@ const ic = (import.meta.env.VITE_IC as string).split(",").map((c, i) => (
   </span>
 ));
 
-export default function AboutPanel({
-  expand,
-  setExpand,
-}: {
-  expand: boolean;
-  setExpand: (b: boolean) => void;
-}) {
-  if (!expand) {
-    return <AboutButton onClick={() => setExpand(true)} />;
-  }
-
-  enum About {
-    None,
-    Info,
-    Imprint,
-    Privacy,
-  }
-  const [expandAbout, setExpandAbout] = useState<About>(About.Info);
-
+function InfoContent() {
   return (
-    <div className="control-panel about-panel">
-      <CloseButton onClick={() => setExpand(false)} />
-      <h4>Die kurze Durststrecke - Deine Community-App für München</h4>
-      <div
-        className="about-header"
-        onClick={() => setExpandAbout((e) => (e !== About.Info ? About.Info : About.None))}
-      >
-        <img src={expandAbout === About.Info ? ChevronUp : ChevronDown} />
-        Info
+    <>
+      <h3>Die kurze Durststrecke</h3>
+      <div className="about-content">
+        <p>
+          Mit der kurzen Durststrecke findest du schnell und unkompliziert die besten Durstlöscher
+          in deiner Nähe - ob Trinkwasserbrunnen, Spätis, Bars, Kioske oder andere Anlaufstellen.
+        </p>
+        <p>
+          Bitte beachte: Da sich Standorte, Angebote und Öffnungszeiten schnell ändern können, sind
+          manche Angaben eventuell nicht immer auf dem neuesten Stand. Wir arbeiten kontinuierlich
+          daran, die Daten aktuell zu halten und freuen uns über jeden Hinweis aus der Community.
+        </p>
       </div>
-      {expandAbout === About.Info && (
-        <div className="about-content">
-          <p>
-            Mit der kurzen Durststrecke findest du schnell und unkompliziert die besten Durstlöscher
-            in deiner Nähe - ob Trinkwasserbrunnen, Spätis, Bars, Kioske oder andere Anlaufstellen.
-          </p>
-          <p>
-            Bitte beachte: Da sich Standorte, Angebote und Öffnungszeiten schnell ändern können,
-            sind manche Angaben eventuell nicht immer auf dem neuesten Stand. Wir arbeiten
-            kontinuierlich daran, die Daten aktuell zu halten und freuen uns über jeden Hinweis aus
-            der Community.
-          </p>
-        </div>
-      )}
-      <div
-        className="about-header"
-        onClick={() => setExpandAbout((e) => (e !== About.Imprint ? About.Imprint : About.None))}
-      >
-        <img src={expandAbout === About.Imprint ? ChevronUp : ChevronDown} />
-        Impressum
+    </>
+  );
+}
+
+function ImprintContent() {
+  return (
+    <>
+      <h3>Impressum</h3>
+      <div className="about-content">
+        <p>{ic}</p>
       </div>
-      {expandAbout === About.Imprint && (
-        <div className="about-content">
-          <p>{ic}</p>
-        </div>
-      )}
-      <div
-        className="about-header"
-        onClick={() => setExpandAbout((e) => (e !== About.Privacy ? About.Privacy : About.None))}
-      >
-        <img src={expandAbout === About.Privacy ? ChevronUp : ChevronDown} />
-        Datenschutzerklärung
+    </>
+  );
+}
+
+function PrivacyContent() {
+  return (
+    <>
+      <h3>Datenschutzerklärung</h3>
+      <div className="about-content">
+        {privacyText.map((c, i) => (
+          <p key={i}>{i === 2 ? ic : c}</p>
+        ))}
       </div>
-      {expandAbout === About.Privacy && (
-        <div className="about-content">
-          {privacyText.map((c, i) => (
-            <p key={i}>{i === 2 ? ic : c}</p>
-          ))}
-        </div>
+    </>
+  );
+}
+
+export default function AboutPanel({
+  showAbout,
+  setShowAbout,
+}: {
+  showAbout: AboutState;
+  setShowAbout: React.Dispatch<React.SetStateAction<AboutState>>;
+}) {
+  return (
+    <div className="info-panel">
+      <CloseButton onClick={() => setShowAbout(AboutState.None)} />
+      {showAbout === AboutState.Info ? (
+        <InfoContent />
+      ) : showAbout === AboutState.Imprint ? (
+        <ImprintContent />
+      ) : (
+        <PrivacyContent />
       )}
     </div>
   );

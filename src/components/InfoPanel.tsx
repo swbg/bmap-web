@@ -221,9 +221,10 @@ function GenericPanel({
     <div className="info-panel">
       <CloseButton onClick={unsetActivePlace} />
       <h3>{activePlace.placeName}</h3>
+      {formatPlaceType(activePlace.placeType)}
       <div className="info-divider" />
-      {activePlace.note && <p>{activePlace.note}</p>}
-      <p>{source}</p>
+      {activePlace.note && <div className="info-element">{activePlace.note}</div>}
+      <div className="info-element">{source}</div>
     </div>
   );
 }
