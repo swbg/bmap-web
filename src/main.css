@@ -3,7 +3,7 @@
 }
 
 :root {
-  font-family: "Arial", sans-serif;
+  font-family: Arial, sans-serif;
   color: #111111;
 
   font-synthesis: none;
@@ -16,9 +16,9 @@
   --color-dark-gray: #555555;
   --color-hover: #eeeeee;
 
-  --button-size: 3rem;
+  --button-size: 2.4rem;
   --border-radius-sml: 5px;
-  --icon-size: 1.4rem;
+  --icon-size: 1.2rem;
 }
 
 #root {
@@ -61,25 +61,87 @@ input:focus {
   height: 100%;
 }
 
+/* AttribControl */
+.attrib-control {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  margin-left: 5px;
+  /* height: 24px; */
+  /* padding: calc(var(--button-size) / 3); */
+
+  background-color: white;
+
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+
+  z-index: 3;
+} /* adjusted in @media below */
+
+.attrib-content {
+  font-size: 12px;
+  line-height: 24px;
+  padding-left: 8px;
+  padding-right: 2px;
+  /* display: flex;
+  flex-direction: row;
+  gap: 5px;
+  flex-flow: wrap;
+  justify-content: flex-end; */
+}
+
+.attrib-content a {
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.attrib-content a:hover {
+  text-decoration: underline;
+}
+
+.attrib-logo {
+  border-radius: 12px;
+}
+
+.attrib-logo:hover {
+  background-color: var(--color-hover);
+}
+
+.attrib-logo img {
+  display: block;
+  height: 24px;
+  cursor: pointer;
+}
+
 /* InfoPanel */
 .info-panel {
   position: absolute;
   top: 5px;
   left: 5px;
-  min-width: 20vw;
-  padding: calc(var(--button-size) / 3);
 
+  width: min(30rem, 80vw);
   background-color: white;
 
   border-radius: calc(var(--button-size) / 2);
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 
-  z-index: 3;
+  padding: calc(var(--button-size) / 3);
+
+  /* For AboutPanel overflow */
+  max-height: calc(100vh - 10px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 } /* adjusted in @media below */
 
 .info-panel h3 {
-  margin-top: 0;
-  margin-bottom: 0.4rem;
+  margin: 0;
 }
 
 .info-panel p {
@@ -106,15 +168,15 @@ p.info-subtitle {
 .info-divider {
   border-bottom: 1px solid var(--color-dark-gray);
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
 }
 
 .info-element {
   display: flex;
   flex-direction: row;
-  align-items: top;
+  align-items: flex-start;
   gap: 0.8rem;
-  margin: 0.8rem 0;
+  margin: 0.4rem 0;
 }
 
 .info-element:last-child {
@@ -123,6 +185,10 @@ p.info-subtitle {
 
 .info-element img {
   height: 1.2rem;
+}
+
+.info-panel:last-child {
+  margin-bottom: 0;
 }
 
 /* ControlBar */
@@ -235,6 +301,10 @@ p.info-subtitle {
   -o-filter: grayscale(100%);
 }
 
+.source-pill:hover {
+  background-color: var(--color-hover);
+}
+
 .control-panel {
   width: min(30rem, 80vw);
   background-color: white;
@@ -332,11 +402,11 @@ p.info-subtitle {
 /* Buttons */
 .close-button {
   position: absolute;
-  top: calc((var(--button-size) - 2.4rem) / 2);
-  right: calc((var(--button-size) - 2.4rem) / 2);
+  top: calc((var(--button-size) - 2.1rem) / 2);
+  right: calc((var(--button-size) - 2.1rem) / 2);
 
-  height: 2.4rem;
-  width: 2.4rem;
+  height: 2.1rem;
+  width: 2.1rem;
 
   border-radius: 100%;
   cursor: pointer;
@@ -376,22 +446,44 @@ p.info-subtitle {
 
 .maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon {
   background-image: url(/icons/plus.svg) !important;
-  background-size: 1.6rem;
+  background-size: var(--icon-size);
 }
 
 .maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon {
   background-image: url(/icons/minus.svg) !important;
-  background-size: 1.6rem;
+  background-size: var(--icon-size);
 }
 
 /* .maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon {
   background-image: url(compass.svg) !important;
-  background-size: 1.6rem;
+  background-size: var(--icon-size);
 }
 
 .maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
   background-image: url(geolocate.svg) !important;
-  background-size: 1.6rem;
+  background-size: var(--icon-size);
+} */
+
+/* .maplibregl-ctrl-attrib-button {
+  background-image: url("/icons/attrib.svg");
+  background-size: 24px;
+  background-color: white;
+}
+
+.maplibregl-ctrl-attrib-button:focus {
+  box-shadow: none;
+}
+
+.maplibregl-ctrl-attrib-button:hover {
+  background-color: var(--color-hover);
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-button {
+  background-color: var(--color-hover);
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  margin: 5px;
 } */
 
 /* Media queries*/
@@ -404,10 +496,20 @@ p.info-subtitle {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     border-bottom: none;
+    max-height: calc(70vh);
+    padding-bottom: calc(24px + 10px);
+  }
+
+  .maplibregl-ctrl.maplibregl-ctrl-group:has(button.maplibregl-ctrl-zoom-in) {
+    display: none;
   }
 }
 
 @media (pointer: coarse) {
+  .attrib-logo:hover {
+    background-color: white;
+  }
+
   .control-button:hover {
     background-color: white;
   }
@@ -420,7 +522,11 @@ p.info-subtitle {
     background-color: white;
   }
 
-  .filter-pill:hover {
+  .source-pill:hover {
+    background-color: white;
+  }
+
+  .filter-pill:hover .filter-close {
     background-color: white;
   }
 
@@ -430,6 +536,14 @@ p.info-subtitle {
 
   .maplibregl-ctrl button:not(:disabled):hover {
     background-color: white;
+  }
+
+  .maplibregl-ctrl-attrib-button:hover {
+    background-color: white;
+  }
+
+  .maplibregl-ctrl.maplibregl-ctrl-group:has(button.maplibregl-ctrl-zoom-in) {
+    display: none;
   }
 }
 

@@ -15,6 +15,13 @@ export enum Colors {
   Halo = "#ffffff",
 }
 
+export enum AboutState {
+  Info,
+  Imprint,
+  Privacy,
+  None,
+}
+
 export const Sources = ["circle", "bag", "drop"] as const;
 
 export const ProductTypes = [

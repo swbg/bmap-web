@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Sources } from "../const";
 import { FilterAction, FilterState, Place, PlaceFeature, Product } from "../types";
-import AboutPanel from "./AboutPanel";
 import FilterBar from "./FilterBar";
 import { FilterPill, SourcePill } from "./FilterPill";
 import SearchBar from "./SearchBar";
@@ -98,7 +97,6 @@ export default function ControlBar({
     None,
     Search,
     Filter,
-    About,
   }
   const [expandControl, setExpandControl] = useState<Control>(Control.None);
 
@@ -138,13 +136,6 @@ export default function ControlBar({
           expand={expandControl == Control.Filter}
           dispatchFilter={dispatchFilter}
           setExpand={(b: boolean) => setExpandControl(b ? Control.Filter : Control.None)}
-        />
-      </div>
-
-      <div className="control-row">
-        <AboutPanel
-          expand={expandControl == Control.About}
-          setExpand={(b: boolean) => setExpandControl(b ? Control.About : Control.None)}
         />
       </div>
     </div>
