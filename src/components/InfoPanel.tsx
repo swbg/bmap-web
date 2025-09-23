@@ -1,8 +1,18 @@
+import React from "react";
 import Clock from "../assets/clock.svg";
 import Globe from "../assets/globe.svg";
 import Location from "../assets/location.svg";
 import Phone from "../assets/phone.svg";
-import { OpeningLabels, OpeningStatus, ProductTypes, Weekdays } from "../const";
+import {
+  OpeningLabels,
+  OpeningStatus,
+  ProductTypes,
+  Weekdays,
+  furtherProducts,
+  labelFurther,
+  labelNoPrices,
+  labelNonAlcoholic,
+} from "../const";
 import { Entry, Place, Product } from "../types";
 import { formatPrice, formatVolume } from "../utils";
 import { CloseButton } from "./Buttons";
@@ -130,35 +140,109 @@ function formatHours(hours: string | undefined) {
   );
 }
 
-function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
-  if (!activeEntries) return <p>Noch keine Preise verfügbar.</p>;
+/* -------------------------  Drink Entry Formatter ------------------------- */
 
-  const entrySorter = (ea: Entry, eb: Entry) => {
-    const pa = products.get(ea.productId)!.productType;
-    const pb = products.get(eb.productId)!.productType;
-    return ProductTypes.indexOf(pa) - ProductTypes.indexOf(pb);
-  };
+// Belongs to Weinschorle, Spritz or Non alcohol Spritz
+export function isFurtherProduct(product: Product): boolean {
+  const nameLower = product.productName.toLowerCase();
+  return furtherProducts.some((token) => nameLower.includes(token.toLowerCase()));
+}
 
+// Sort entries per location by productType to get groups
+export function sortEntriesByProductType(
+  entries: Entry[],
+  products: Map<number, Product>,
+  typeOrder: string[],
+): Entry[] {
+  return [...entries].sort((a, b) => {
+    const productA = products.get(a.productId);
+    const productB = products.get(b.productId);
+    if (!productA || !productB) return 0;
+
+    const indexA = typeOrder.indexOf(productA.productType);
+    const indexB = typeOrder.indexOf(productB.productType);
+
+    return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+  });
+}
+
+// Reneder product name, style non-alcoholic string
+function renderProductName(name: string): React.ReactNode[] {
+  return name.split(labelNonAlcoholic).flatMap((part, i, arr) => [
+    part,
+    ...(i < arr.length - 1
+      ? [
+          <span key={`alko-${i}`} className="non-alcoholic">
+            {labelNonAlcoholic}
+          </span>,
+        ]
+      : []),
+  ]);
+}
+
+function renderBrandRow(brand: string, index: number) {
   return (
-    <div className="info-element">
-      <table>
-        <tbody>
-          {activeEntries.sort(entrySorter).map((e, i) => {
-            const p = products.get(e.productId)!;
-            return (
-              <tr key={i}>
-                <td>{p.brandName || p.productName}</td>
-                <td>{p.brandName ? p.productName : ""}</td>
-                <td>{formatVolume(e.volume)}</td>
-                <td>{formatPrice(e.price)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div key={`brand-${index}`} className="menu-row brand-row">
+      <div className="brand">{brand}</div>
     </div>
   );
 }
+
+function renderProductRow(entry: Entry, product: Product, brandKey: string, index: number) {
+  return (
+    <div key={`entry-${brandKey}-${index}`} className="menu-row product-row indent">
+      <div className="product">{renderProductName(product.productName)}</div>
+      <div className="volume">{formatVolume(entry.volume)}</div>
+      <div className="price">{formatPrice(entry.price)}</div>
+    </div>
+  );
+}
+
+export function formatDrinkEntries(
+  activeEntries: Entry[] | undefined,
+  products: Map<number, Product>,
+) {
+  if (!activeEntries || activeEntries.length === 0) {
+    return <p>{labelNoPrices}</p>;
+  }
+
+  // Sort entries once by product type
+  const sortedEntries = sortEntriesByProductType(activeEntries, products, [...ProductTypes]);
+
+  // Group entries by brand or as "further"
+  const groupedEntries = new Map<string, Entry[]>();
+  const furtherEntries: Entry[] = [];
+
+  for (const entry of sortedEntries) {
+    const product = products.get(entry.productId);
+    if (!product) continue;
+
+    if (isFurtherProduct(product)) {
+      furtherEntries.push(entry);
+    } else {
+      const brandKey = product.brandName || product.productName || "Unbekannt";
+      if (!groupedEntries.has(brandKey)) groupedEntries.set(brandKey, []);
+      groupedEntries.get(brandKey)!.push(entry);
+    }
+  }
+
+  if (furtherEntries.length) groupedEntries.set(labelFurther, furtherEntries);
+
+  // Build menu
+  return (
+    <div className="menu">
+      {Array.from(groupedEntries.entries()).flatMap(([brand, entries], groupIndex) => [
+        renderBrandRow(brand, groupIndex),
+        ...entries.map((entry, i) => {
+          const product = products.get(entry.productId)!;
+          return renderProductRow(entry, product, brand, i);
+        }),
+      ])}
+    </div>
+  );
+}
+
+/* -------------------------  Gastro Panel ------------------------- */
 
 function GastroPanel({
   activePlace,
@@ -180,7 +264,7 @@ function GastroPanel({
       {googlifyAddress(activePlace.address)}
       {formatPhone(activePlace.phone)}
       {formatWebsite(activePlace.website)}
-      {formatEntries(activeEntries, products)}
+      {formatDrinkEntries(activeEntries, products)}
     </div>
   );
 }
