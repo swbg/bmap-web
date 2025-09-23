@@ -149,20 +149,22 @@ export function isFurtherProduct(product: Product): boolean {
 }
 
 // Sort entries per location by productType to get groups
-export function sortEntriesByProductType(
+function sortEntriesByProductType(
   entries: Entry[],
   products: Map<number, Product>,
   typeOrder: string[],
-): Entry[] {
+) {
+  const typePriority = new Map<string, number>(typeOrder.map((type, i) => [type, i]));
+
   return [...entries].sort((a, b) => {
     const productA = products.get(a.productId);
     const productB = products.get(b.productId);
     if (!productA || !productB) return 0;
 
-    const indexA = typeOrder.indexOf(productA.productType);
-    const indexB = typeOrder.indexOf(productB.productType);
+    const idxA = typePriority.get(productA.productType) ?? Infinity;
+    const idxB = typePriority.get(productB.productType) ?? Infinity;
 
-    return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+    return idxA - idxB;
   });
 }
 
