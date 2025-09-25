@@ -124,7 +124,7 @@ input:focus {
   top: 5px;
   left: 5px;
 
-  width: min(30rem, 80vw);
+  width: min(30rem, 40vw);
   background-color: white;
 
   border-radius: calc(var(--button-size) / 2);
@@ -189,6 +189,57 @@ p.info-subtitle {
 
 .info-panel:last-child {
   margin-bottom: 0;
+}
+
+.info_menu {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+  margin-top: 0.2rem;
+}
+
+/* Generic row style */
+.info_menu-row {
+  display: grid;
+  grid-template-columns: 1fr min-content min-content; /* flexible product, volume, price */
+  gap: 1rem; /* reduce space between columns */
+  align-items: baseline;
+}
+
+.info_brand-row {
+  margin-top: 0.5rem; /*remove*/
+}
+
+.info_brand {
+  font-weight: 600;
+}
+
+.info_product-row.indent {
+  padding-left: 0.5rem;
+}
+
+/* Shared text color for products, volume, and price */
+.info_product,
+.info_volume {
+  color: #444;
+}
+
+/* Price column */
+.info_price {
+  text-align: right;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+/* Volume column */
+.info_volume {
+  text-align: middle;
+}
+
+/* Non-alcoholic and ab label */
+.info_small_panel_text {
+  font-size: 80%;
+  padding-right: 3px;
 }
 
 /* ControlBar */
