@@ -69,7 +69,7 @@ export const OpeningLabels: Record<OpeningStatus, string> = {
 };
 
 // Info Panel Drink Entries
-export const labelNoPrices = "Noch keine Preise verfügbar.";
+export const labelNoPrices = "Noch keine Preise verfügbar";
 export const labelFurther = "Weitere Getränke";
 export const labelNonAlcoholic = "Alkoholfrei";
-export const furtherProducts = ["Weinschorle", "Spritz"];
+export const labelCategoryFurtherDrinks = ["Weinschorle", "Spritz"];
