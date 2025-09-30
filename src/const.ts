@@ -68,8 +68,9 @@ export const OpeningLabels: Record<OpeningStatus, string> = {
   [OpeningStatus.Unknown]: "",
 };
 
-// Info Panel Drink Entries
-export const labelNoPrices = "Noch keine Preise verfügbar";
-export const labelFurther = "Weitere Getränke";
-export const labelNonAlcoholic = "Alkoholfrei";
-export const labelCategoryFurtherDrinks = ["Weinschorle", "Spritz"];
+export const GastroLabels = {
+  NoPrices: "Noch keine Preise verfügbar",
+  NonAlcoholic: "Alkoholfrei",
+  OtherDrinks: "Weitere Getränke",
+  OtherCategories: ["Weinschorle", "Spritz"],
+};

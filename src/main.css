@@ -124,7 +124,7 @@ input:focus {
   top: 5px;
   left: 5px;
 
-  width: min(30rem, 40vw);
+  width: min(30rem, 80vw);
   background-color: white;
 
   border-radius: calc(var(--button-size) / 2);
