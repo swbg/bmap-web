@@ -25,10 +25,10 @@ function sortEntriesByProductType(
   });
 }
 
-// Get entries belongs to Weinschorle, Spritz or Non alcohol Spritz
+// Get entries belonging to Weinschorle, Spritz or non-alcoholic Spritz
 function isCategoryFurtherDrinks(product: Product): boolean {
   const nameLower = product.productName.toLowerCase();
-  return GastroLabels.OtherCategories.some((token) => nameLower.includes(token.toLowerCase()));
+  return GastroLabels.FurtherCategories.some((token) => nameLower.includes(token.toLowerCase()));
 }
 
 // Reneder product name, style non-alcoholic string
@@ -54,7 +54,7 @@ function renderBrandRow(brand: string, index: number) {
 }
 
 function renderProductRow(entry: Entry, product: Product, groupKey: string, i: number) {
-  const isFurther = groupKey === GastroLabels.OtherDrinks;
+  const isFurther = groupKey === GastroLabels.FurtherDrinks;
 
   return (
     <div key={`entry-${groupKey}-${i}`} className="info_menu-row info_product-row indent">
@@ -68,8 +68,8 @@ function renderProductRow(entry: Entry, product: Product, groupKey: string, i: n
   );
 }
 
-/* Format main tabel for the drink entries in the info panel*/
-function formatDrinkEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
+/* Format main table for the drink entries in the gastro panel */
+function formatEntries(activeEntries: Entry[] | undefined, products: Map<number, Product>) {
   if (!activeEntries || activeEntries.length === 0) {
     return <p className="info_product">{GastroLabels.NoPrices} 😕</p>;
   }
@@ -94,7 +94,7 @@ function formatDrinkEntries(activeEntries: Entry[] | undefined, products: Map<nu
     }
   }
 
-  if (furtherEntries.length) groupedEntries.set(GastroLabels.OtherDrinks, furtherEntries);
+  if (furtherEntries.length) groupedEntries.set(GastroLabels.FurtherDrinks, furtherEntries);
 
   return (
     <div className="info_menu">
@@ -129,7 +129,7 @@ export default function GastroPanel({
       {googlifyAddress(activePlace.address)}
       {formatPhone(activePlace.phone)}
       {formatWebsite(activePlace.website)}
-      {formatDrinkEntries(activeEntries, products)}
+      {formatEntries(activeEntries, products)}
     </div>
   );
 }

@@ -71,6 +71,6 @@ export const OpeningLabels: Record<OpeningStatus, string> = {
 export const GastroLabels = {
   NoPrices: "Noch keine Preise verfügbar",
   NonAlcoholic: "Alkoholfrei",
-  OtherDrinks: "Weitere Getränke",
-  OtherCategories: ["Weinschorle", "Spritz"],
+  FurtherDrinks: "Weitere Getränke",
+  FurtherCategories: ["Weinschorle", "Spritz"],
 };
